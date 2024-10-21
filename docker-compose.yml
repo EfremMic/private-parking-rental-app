@@ -1,0 +1,69 @@
+
+
+services:
+  consul:
+    image: consul:1.10
+    ports:
+      - "8500:8500"
+    command: agent -server -bootstrap -ui -client=0.0.0.0
+    networks:
+      - parking-network
+
+  frontend:
+    build: ./parking-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - parking-network
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8081:8081"
+    networks:
+      - parking-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=consul
+    depends_on:
+      - postgres
+      - consul
+
+  parking-service:
+    build: ./parking-service
+    ports:
+      - "8082:8082"
+    networks:
+      - parking-network
+    depends_on:
+      - postgres
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "8083:8083"
+    networks:
+      - parking-network
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "8084:8084"
+    networks:
+      - parking-network
+
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: parking_user
+      POSTGRES_PASSWORD: parking_pass
+      POSTGRES_DB: parking_db
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - parking-network
+
+networks:
+  parking-network:
+    driver: bridge
