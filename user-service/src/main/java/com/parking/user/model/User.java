@@ -3,6 +3,7 @@ package com.parking.user.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "\"users\"")
 public class User {
 
     @Id
@@ -14,9 +15,9 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    private String profileImageUrl; // Missing field for profile image URL
+    private String profileImageUrl;
 
-    private String googleId; // Optional field for Google ID
+    private String googleId;
 
     // Getters and Setters
 
