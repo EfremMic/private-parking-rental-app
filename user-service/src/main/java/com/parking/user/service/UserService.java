@@ -9,7 +9,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class UserService {
             log.info("Saving new user with email: {}", email);
             User savedUser = userRepository.save(newUser);
 
-            log.info("Publishing UserCreatedEvent for user: {}", savedUser.getEmail());
+            log.info("Publishing UserCreatedEvent for new user: {}", savedUser.getEmail());
             userEventPublisher.publishUserCreatedEvent(savedUser);
 
             // Broadcast user login via WebSocket
@@ -38,6 +37,33 @@ public class UserService {
 
             return savedUser;
         });
+    }
+
+    public User loginUser(OidcUser oidcUser) {
+        String email = oidcUser.getEmail();
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setName(oidcUser.getFullName());
+            newUser.setProfileImageUrl(oidcUser.getPicture());
+
+            log.info("Saving new user with email: {}", email);
+            User savedUser = userRepository.save(newUser);
+
+            log.info("Publishing UserCreatedEvent for user: {}", savedUser.getEmail());
+            userEventPublisher.publishUserCreatedEvent(savedUser);
+
+            return savedUser;
+        });
+
+        // Publish the login event for the existing user
+        log.info("Publishing UserLoginEvent for user: {}", user.getEmail());
+        userEventPublisher.publishLoginEvent(user.getId().toString());
+
+        // Broadcast user login via WebSocket
+        messagingTemplate.convertAndSend("/topic/user-logins", user);
+
+        return user;
     }
 
     public User getOrCreateUser(String email, String name, String profileImageUrl) {
@@ -64,5 +90,4 @@ public class UserService {
         log.info("Creating new user with email: {}", user.getEmail());
         return userRepository.save(user);
     }
-
 }

@@ -9,31 +9,38 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 @Configuration
 public class AmqpConfig {
 
-    // Define a topic exchange for user events
     @Bean
-    public TopicExchange userExchange(@Value("${user.exchange.name}") final String exchangeName) {
-        return ExchangeBuilder.topicExchange(exchangeName).durable(true).build();
+    public TopicExchange userLoginExchange(@Value("${user.login.exchange.name}") String exchangeName) {
+        return new TopicExchange(exchangeName);
     }
 
-    // Define a queue for user creation events
     @Bean
-    public Queue userCreatedQueue(@Value("${user.queue.name}") final String queueName) {
+    public TopicExchange userCreatedExchange(@Value("${user.created.exchange.name}") String exchangeName) {
+        return new TopicExchange(exchangeName);
+    }
+
+    @Bean
+    public Queue userLoginQueue(@Value("${user.login.queue.name}") String queueName) {
         return new Queue(queueName, true);
     }
 
-    // Bind the user-created queue to the user exchange with routing key "user.created"
     @Bean
-    public Binding binding(Queue userCreatedQueue, TopicExchange userExchange) {
-        return BindingBuilder.bind(userCreatedQueue).to(userExchange).with("user.created");
+    public Queue userCreatedQueue(@Value("${user.created.queue.name}") String queueName) {
+        return new Queue(queueName, true);
     }
 
-    // Set up a message converter to handle JSON serialization/deserialization
     @Bean
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public Binding loginBinding(Queue userLoginQueue, TopicExchange userLoginExchange,
+                                @Value("${user.login.routing.key}") String routingKey) {
+        return BindingBuilder.bind(userLoginQueue).to(userLoginExchange).with(routingKey);
+    }
+
+    @Bean
+    public Binding createdBinding(Queue userCreatedQueue, TopicExchange userCreatedExchange,
+                                  @Value("${user.created.routing.key}") String routingKey) {
+        return BindingBuilder.bind(userCreatedQueue).to(userCreatedExchange).with(routingKey);
     }
 }

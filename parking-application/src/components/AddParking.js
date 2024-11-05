@@ -24,7 +24,7 @@ const AddParking = ({ userId }) => {
             userId: userId  // Attach userId from the props
         };
 
-        fetch("http://localhost:8081/api/parking/add", {
+        fetch("http://localhost:8080/api/parking/add", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
