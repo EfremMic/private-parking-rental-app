@@ -25,6 +25,12 @@ const Welcome = ({ user, onLogout }) => {
             });
     }, []);
 
+    // Function to handle adding a new parking spot
+    const handleParkingAdded = (newParkingSpot) => {
+        setParkingSpots(prevSpots => [...prevSpots, newParkingSpot]);
+        console.log("New parking spot added:", newParkingSpot);
+    };
+
     if (!user) {
         return <h1>Loading...</h1>;  // Display a loading message until user data is fetched
     }
@@ -35,7 +41,8 @@ const Welcome = ({ user, onLogout }) => {
             <img src={user.profileImageUrl} alt={`${user.name}'s profile`} />
             <p>Email: {user.email}</p>
             <Logout onLogout={onLogout} />
-            <AddParking userId={user.id} />
+            {/* Pass handleParkingAdded to AddParking */}
+            <AddParking userId={user.id} onParkingAdded={handleParkingAdded} />
 
             <h2>All Parking Spots</h2>
             {message && <p>{message}</p>}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 const AddParking = ({ userId, onParkingAdded }) => {
     const [parkingData, setParkingData] = useState({
         name: '',
@@ -20,7 +21,7 @@ const AddParking = ({ userId, onParkingAdded }) => {
 
         const dataToSend = {
             ...parkingData,
-            userId: userId
+            userId: userId // Ensure userId is passed as expected by the backend
         };
 
         try {
@@ -32,16 +33,17 @@ const AddParking = ({ userId, onParkingAdded }) => {
                 body: JSON.stringify(dataToSend),
             });
 
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
+            // Check for specific status codes and handle accordingly
+            if (response.status === 201 || response.ok) { // Adjusted to handle 201 Created
+                const data = await response.json();
+                console.log("Parking spot added:", data);
+                setMessage("Parking spot added successfully!");
+
+                // Call the callback to update the parking spots list in the parent component
+                onParkingAdded(data);
+            } else {
+                throw new Error(`Unexpected response status: ${response.status}`);
             }
-
-            const data = await response.json();
-            console.log("Parking spot added:", data);
-            setMessage("Parking spot added successfully!");
-
-            // Call the callback to update the parking spots list
-            onParkingAdded(data);
 
         } catch (error) {
             console.error("Error adding parking:", error);
