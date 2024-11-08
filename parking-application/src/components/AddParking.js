@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const AddParking = ({ userId }) => {
+const AddParking = ({ userId, onParkingAdded }) => {
     const [parkingData, setParkingData] = useState({
         name: '',
         location: '',
@@ -16,35 +15,38 @@ const AddParking = ({ userId }) => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const dataToSend = {
             ...parkingData,
-            userId: userId  // Attach userId from the props
+            userId: userId
         };
 
-        fetch("http://localhost:8080/api/parking/add", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(dataToSend),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log("Parking spot added:", data);
-                setMessage("Parking spot added successfully!");
-            })
-            .catch((error) => {
-                console.error("Error adding parking:", error);
-                setMessage("Error adding parking.");
+        try {
+            const response = await fetch("http://localhost:8082/api/parking/add", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(dataToSend),
             });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            const data = await response.json();
+            console.log("Parking spot added:", data);
+            setMessage("Parking spot added successfully!");
+
+            // Call the callback to update the parking spots list
+            onParkingAdded(data);
+
+        } catch (error) {
+            console.error("Error adding parking:", error);
+            setMessage("Error adding parking.");
+        }
     };
 
     return (

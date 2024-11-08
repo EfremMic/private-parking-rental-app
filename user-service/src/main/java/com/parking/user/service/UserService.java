@@ -16,7 +16,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserEventPublisher userEventPublisher;
-    private final SimpMessagingTemplate messagingTemplate;  // WebSocket messaging template
+    private final SimpMessagingTemplate messagingTemplate;
 
     public User getOrCreateUser(OidcUser oidcUser) {
         String email = oidcUser.getEmail();
@@ -30,56 +30,8 @@ public class UserService {
             User savedUser = userRepository.save(newUser);
 
             log.info("Publishing UserCreatedEvent for new user: {}", savedUser.getEmail());
-            userEventPublisher.publishUserCreatedEvent(savedUser);
+            userEventPublisher.publishUserCreatedEvent(savedUser.getGoogleId(), savedUser.getEmail(), savedUser.getName(), savedUser.getProfileImageUrl());
 
-            // Broadcast user login via WebSocket
-            messagingTemplate.convertAndSend("/topic/user-logins", savedUser);
-
-            return savedUser;
-        });
-    }
-
-    public User loginUser(OidcUser oidcUser) {
-        String email = oidcUser.getEmail();
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setName(oidcUser.getFullName());
-            newUser.setProfileImageUrl(oidcUser.getPicture());
-
-            log.info("Saving new user with email: {}", email);
-            User savedUser = userRepository.save(newUser);
-
-            log.info("Publishing UserCreatedEvent for user: {}", savedUser.getEmail());
-            userEventPublisher.publishUserCreatedEvent(savedUser);
-
-            return savedUser;
-        });
-
-        // Publish the login event for the existing user
-        log.info("Publishing UserLoginEvent for user: {}", user.getEmail());
-        userEventPublisher.publishLoginEvent(user.getId().toString());
-
-        // Broadcast user login via WebSocket
-        messagingTemplate.convertAndSend("/topic/user-logins", user);
-
-        return user;
-    }
-
-    public User getOrCreateUser(String email, String name, String profileImageUrl) {
-        return userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setName(name);
-            newUser.setProfileImageUrl(profileImageUrl);
-
-            log.info("Saving new user with email: {}", email);
-            User savedUser = userRepository.save(newUser);
-
-            log.info("Publishing UserCreatedEvent for user: {}", savedUser.getEmail());
-            userEventPublisher.publishUserCreatedEvent(savedUser);
-
-            // Broadcast user login via WebSocket
             messagingTemplate.convertAndSend("/topic/user-logins", savedUser);
 
             return savedUser;
@@ -89,5 +41,20 @@ public class UserService {
     public User createUser(User user) {
         log.info("Creating new user with email: {}", user.getEmail());
         return userRepository.save(user);
+    }
+
+    public User getOrCreateUser(String email, String name, String profileImageUrl) {
+        userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setName(name);
+            newUser.setProfileImageUrl(profileImageUrl);
+
+            User savedUser = userRepository.save(newUser);
+            userEventPublisher.publishUserCreatedEvent(savedUser.getGoogleId(), email, name, profileImageUrl);
+
+            return savedUser;
+        });
+        return null;
     }
 }

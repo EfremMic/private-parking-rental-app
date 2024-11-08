@@ -1,3 +1,5 @@
+
+
 services:
   consul:
     image: consul:1.10
@@ -9,127 +11,129 @@ services:
 
 
   rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - parking-network
-    healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      image: rabbitmq:3-management
+      ports:
+        - "5672:5672"
+        - "15672:15672"
+      networks:
+        - parking-network
+      healthcheck:
+        test: [ "CMD", "rabbitmqctl", "status" ]
+        interval: 30s
+        timeout: 10s
+        retries: 5
 
   user-service:
-    build:
-      context: ../user-service  # Path to user-service Dockerfile
-    ports:
-      - "8081:8080"  # Mapping internal app port 8080 to external 8081
-    networks:
-      - parking-network
-    environment:
-      - SPRING_PROFILES_ACTIVE=consul
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    depends_on:
-      - consul
-      - rabbitmq  # Add RabbitMQ as a dependency
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      build:
+        context: ../user-service
+      ports:
+        - "8081:8080"
+      networks:
+        - parking-network
+      environment:
+        - SPRING_PROFILES_ACTIVE=consul
+        - SPRING_RABBITMQ_HOST=rabbitmq
+        - SPRING_RABBITMQ_PORT=5672
+        - SPRING_RABBITMQ_USERNAME=guest
+        - SPRING_RABBITMQ_PASSWORD=guest
+      depends_on:
+        - consul
+        - rabbitmq  # Add RabbitMQ as a dependency
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+        interval: 30s
+        timeout: 10s
+        retries: 3
 
   parking-service:
-    build:
-      context: ../parking-service  # Path to parking-service Dockerfile
-    ports:
-      - "8082:8080"  # Mapping internal app port 8080 to external 8082
-    networks:
-      - parking-network
-    environment:
-      - SPRING_PROFILES_ACTIVE=consul
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    depends_on:
-      - consul
-      - rabbitmq
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      build:
+        context: ../parking-service  # Path to parking-service Dockerfile
+      ports:
+        - "8082:8080"  # Mapping internal app port 8080 to external 8082
+      networks:
+        - parking-network
+      environment:
+        - SPRING_PROFILES_ACTIVE=consul
+        - SPRING_RABBITMQ_HOST=rabbitmq
+        - SPRING_RABBITMQ_PORT=5672
+        - SPRING_RABBITMQ_USERNAME=guest
+        - SPRING_RABBITMQ_PASSWORD=guest
+      depends_on:
+        - consul
+        - rabbitmq
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+        interval: 30s
+        timeout: 10s
+        retries: 3
 
   notification-service:
-    build:
-      context: ../notification-service  # Path to notification-service Dockerfile
-    ports:
-      - "8083:8080"  # Mapping internal app port 8080 to external 8083
-    networks:
-      - parking-network
-    environment:
-      - SPRING_PROFILES_ACTIVE=consul
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    depends_on:
-      - consul
-      - rabbitmq  # Add RabbitMQ as a dependency
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      build:
+        context: ../notification-service  # Path to notification-service Dockerfile
+      ports:
+        - "8083:8080"  # Mapping internal app port 8080 to external 8083
+      networks:
+        - parking-network
+      environment:
+        - SPRING_PROFILES_ACTIVE=consul
+        - SPRING_RABBITMQ_USERNAME=guest
+        - SPRING_RABBITMQ_PASSWORD=guest
+        - SPRING_RABBITMQ_HOST=rabbitmq
+        - SPRING_RABBITMQ_PORT=5672
+      depends_on:
+        - consul
+        - rabbitmq  # Add RabbitMQ as a dependency
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+        interval: 30s
+        timeout: 10s
+        retries: 3
 
   payment-service:
-    build:
-      context: ../payment-service  # Path to payment-service Dockerfile
-    ports:
-      - "8084:8080"  # Mapping internal app port 8080 to external 8084
-    networks:
-      - parking-network
-    environment:
-      - SPRING_PROFILES_ACTIVE=consul
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    depends_on:
-      - consul
-      - rabbitmq  # Add RabbitMQ as a dependency
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      build:
+        context: ../payment-service  # Path to payment-service Dockerfile
+      ports:
+        - "8084:8080"  # Mapping internal app port 8080 to external 8084
+      networks:
+        - parking-network
+      environment:
+        - SPRING_PROFILES_ACTIVE=consul
+        - SPRING_RABBITMQ_HOST=rabbitmq
+        - SPRING_RABBITMQ_PORT=5672
+        - SPRING_RABBITMQ_USERNAME=guest
+        - SPRING_RABBITMQ_PASSWORD=guest
+        -  MAIL_USERNAME=${MAIL_USERNAME}
+        - MAIL_PASSWORD=${MAIL_PASSWORD}
+      depends_on:
+        - consul
+        - rabbitmq  # Add RabbitMQ as a dependency
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+        interval: 30s
+        timeout: 10s
+        retries: 3
 
   api-gateway:
-    build:
-      context: ../apigateway  # Path to api-gateway Dockerfile
-    ports:
-      - "8000:8000"  # Expose the API Gateway on port 8000
-    networks:
-      - parking-network
-    depends_on:
-      - consul
-      - rabbitmq  # Add RabbitMQ as a dependency
-      - user-service
-      - parking-service
-      - notification-service
-      - payment-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=consul
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      build:
+        context: ../apigateway  # Path to api-gateway Dockerfile
+      ports:
+        - "8000:8000"  # Expose the API Gateway on port 8000
+      networks:
+        - parking-network
+      depends_on:
+        - consul
+        - rabbitmq  # Add RabbitMQ as a dependency
+        - user-service
+        - parking-service
+        - notification-service
+        - payment-service
+      environment:
+        - SPRING_PROFILES_ACTIVE=consul
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8000/actuator/health" ]
+        interval: 30s
+        timeout: 10s
+        retries: 3
 
 networks:
   parking-network:

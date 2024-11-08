@@ -1,12 +1,20 @@
 package com.parking.notificationservice.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 @Entity
 public class Notification {
 
+    // Status constants
     public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_SENT = "SENT";
+
+    // Type constants
+    public static final String TYPE_EMAIL = "EMAIL";
+    public static final String TYPE_SMS = "SMS";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +37,7 @@ public class Notification {
         this.status = status;
     }
 
-    // Getters and setters
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -67,6 +75,9 @@ public class Notification {
     }
 
     public void setType(String type) {
+        if (!type.equals(TYPE_EMAIL) && !type.equals(TYPE_SMS)) {
+            throw new IllegalArgumentException("Invalid type: " + type);
+        }
         this.type = type;
     }
 
@@ -75,6 +86,9 @@ public class Notification {
     }
 
     public void setStatus(String status) {
+        if (!status.equals(STATUS_PENDING) && !status.equals(STATUS_SENT)) {
+            throw new IllegalArgumentException("Invalid status: " + status);
+        }
         this.status = status;
     }
 }

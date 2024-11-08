@@ -18,6 +18,8 @@ public class ParkingSpot {
 
 
 
+
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -50,5 +52,6 @@ public class ParkingSpot {
     public void setPrice(Double price) {
         this.price = price;
     }
+
 
 }

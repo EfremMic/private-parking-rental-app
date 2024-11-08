@@ -6,6 +6,8 @@ import com.parking.user.repository.UserRepository;
 import com.parking.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,50 +21,60 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class UserServiceApplicationTests {
+public class UserServiceApplicationTests {
+
+	@Mock
 	private UserRepository userRepository;
+
+	@Mock
 	private UserEventPublisher userEventPublisher;
-	private SimpMessagingTemplate simpMessagingTemplate; // Add SimpMessagingTemplate mock
+
+	@Mock
+	private SimpMessagingTemplate messagingTemplate;
+
+	@InjectMocks
 	private UserService userService;
 
+	private User testUser;
+
 	@BeforeEach
-	void setUp() {
-		userRepository = Mockito.mock(UserRepository.class);
-		userEventPublisher = Mockito.mock(UserEventPublisher.class);
-		simpMessagingTemplate = Mockito.mock(SimpMessagingTemplate.class); // Mock the SimpMessagingTemplate
-		userService = new UserService(userRepository, userEventPublisher, simpMessagingTemplate); // Pass the mock
+	public void setUp() {
+		testUser = new User();
+		testUser.setId(1L);
+		testUser.setEmail("test@example.com");
+		testUser.setName("Test User");
+		testUser.setProfileImageUrl("http://example.com/profile.jpg");
 	}
 
 	@Test
-	void testGetOrCreateUser_userAlreadyExists() {
-		OidcUser oidcUser = mock(OidcUser.class);
-		when(oidcUser.getEmail()).thenReturn("test@example.com");
-		User existingUser = new User();
-		when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
+	public void testGetOrCreateUser_NewUser_CallsPublishUserCreatedEvent() {
+		// Mock userRepository to return an empty Optional, indicating the user does not exist
+		when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
 
-		userService.getOrCreateUser(oidcUser);
+		// Mock saving a new user in the repository
+		when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-		verify(userRepository, times(1)).findByEmail("test@example.com");
-		verify(userRepository, never()).save(any(User.class)); // Ensure save is never called since the user exists
-		verify(userEventPublisher, never()).publishUserCreatedEvent(any(User.class)); // No event published for existing user
+		// Call the service method
+		userService.getOrCreateUser(testUser.getEmail(), testUser.getName(), testUser.getProfileImageUrl());
+
+		// Verify that publishUserCreatedEvent is called with the correct parameters
+		verify(userEventPublisher).publishUserCreatedEvent(
+				testUser.getGoogleId(),
+				testUser.getEmail(),
+				testUser.getName(),
+				testUser.getProfileImageUrl()
+		);
 	}
 
 	@Test
-	void testGetOrCreateUser_newUserIsCreated() {
-		OidcUser oidcUser = mock(OidcUser.class);
-		when(oidcUser.getEmail()).thenReturn("newuser@example.com");
-		when(oidcUser.getFullName()).thenReturn("New User");
-		when(oidcUser.getPicture()).thenReturn("https://example.com/profile.jpg");
+	public void testGetOrCreateUser_ExistingUser_DoesNotCallPublishUserCreatedEvent() {
+		// Mock userRepository to return an existing user
+		when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
 
-		when(userRepository.findByEmail("newuser@example.com")).thenReturn(Optional.empty());
+		// Call the service method
+		userService.getOrCreateUser(testUser.getEmail(), testUser.getName(), testUser.getProfileImageUrl());
 
-		User savedUser = new User();
-		when(userRepository.save(any(User.class))).thenReturn(savedUser);
-
-		userService.getOrCreateUser(oidcUser);
-
-		verify(userRepository, times(1)).findByEmail("newuser@example.com");
-		verify(userRepository, times(1)).save(any(User.class)); // Ensure save is called for the new user
-		verify(userEventPublisher, times(1)).publishUserCreatedEvent(any(User.class)); // Event should be published
+		// Verify that publishUserCreatedEvent is NOT called for an existing user
+		verify(userEventPublisher, never()).publishUserCreatedEvent(any(), any(), any(), any());
 	}
 }

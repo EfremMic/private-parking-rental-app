@@ -16,11 +16,6 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @PostMapping("/send")
-    public Notification sendNotification(@RequestBody Notification notification) {
-        notificationService.processNotification(notification);
-        return notification;
-    }
 
     @GetMapping("/list")
     public List<Notification> listNotifications() {

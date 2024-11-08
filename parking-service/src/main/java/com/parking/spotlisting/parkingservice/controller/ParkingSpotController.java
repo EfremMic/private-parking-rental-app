@@ -17,13 +17,21 @@ public class ParkingSpotController {
         this.parkingSpotService = parkingSpotService;
     }
 
+    // Add a new endpoint to add a parking spot
     @PostMapping("/add")
     public ParkingSpot addParkingSpot(@RequestBody ParkingSpotRequest parkingSpotRequest) {
-        return parkingSpotService.addParkingSpot(parkingSpotRequest);
+        ParkingSpot newSpot = parkingSpotService.addParkingSpot(parkingSpotRequest);
+        System.out.println("Added new parking spot: " + newSpot); // Log added spot
+        return newSpot;
     }
 
+    // Add a new endpoint to fetch all parking spots
     @GetMapping("/list")
     public List<ParkingSpot> getAllParkingSpots() {
-        return parkingSpotService.getAllParkingSpots();
+        List<ParkingSpot> parkingSpots = parkingSpotService.getAllParkingSpots();
+        System.out.println("Fetching all parking spots: " + parkingSpots); // Log fetched spots
+        return parkingSpots;
     }
+
+
 }

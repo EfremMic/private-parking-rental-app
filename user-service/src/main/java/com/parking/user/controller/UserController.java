@@ -18,37 +18,23 @@ public class UserController {
 
     private final UserService userService;
 
-    /**
-     * Endpoint to fetch or create a user based on the authenticated Google OAuth2 (OIDC) user.
-     *
-     * @param oidcUser The authenticated OIDC user object
-     * @return The created or fetched User entity
-     */
     @GetMapping("/me")
     public ResponseEntity<User> getOrCreateUser(@AuthenticationPrincipal OidcUser oidcUser) {
-        // Check if OIDC user is null
         if (oidcUser == null) {
             log.warn("Unauthorized access attempt. No OIDC user found.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();  // Return 401 Unauthorized if no user is authenticated
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Extract user info from Google OAuth2 OIDC User
-        String email = oidcUser.getEmail();
-        String name = oidcUser.getFullName();
-        String picture = oidcUser.getPicture();
+        log.info("Authenticated user: {} ({})", oidcUser.getFullName(), oidcUser.getEmail());
 
-        log.info("Authenticated user: {} ({})", name, email);
-
-        // Create or retrieve the user in the database
         try {
-            User user = userService.getOrCreateUser(email, name, picture);
-            return ResponseEntity.ok(user);  // Return 200 OK with the user data
+            User user = userService.getOrCreateUser(oidcUser);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
-            log.error("Error creating or fetching user for email {}: {}", email, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // Return 500 if something went wrong
+            log.error("Error creating or fetching user for email {}: {}", oidcUser.getEmail(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
     /**
      * Endpoint to create a user manually by sending a JSON payload.
      *
@@ -93,3 +79,4 @@ public class UserController {
         }
     }
 }
+

@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Welcome from './components/Welcome';
 import Login from './components/Login';
+import Logout from './components/Logout';
 import ErrorBoundary from './components/ErrorBoundary'; // Import ErrorBoundary
+
 
 function App() {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+
 
     useEffect(() => {
         fetch('http://localhost:8081/api/users/me', {
@@ -31,8 +34,8 @@ function App() {
     }, [navigate]);
 
     const handleLogout = () => {
-        setUser(null);
-        window.location.href = 'http://localhost:8080/logout';
+        setUser(null); // Clear user data
+        navigate('/'); // Navigate back to login
     };
 
     return (
