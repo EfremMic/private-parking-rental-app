@@ -1,17 +1,15 @@
 package com.parking.notificationservice.config;
 
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.core.ExchangeBuilder;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
-public class AmqpConfig {
+public class RabbitMQConfig {
 
     // Declare the Topic Exchange
     @Bean
@@ -22,12 +20,13 @@ public class AmqpConfig {
     // Declare the Queue
     @Bean
     public Queue userCreatedQueue(@Value("${user.queue.name}") String queueName) {
-        return new Queue(queueName, true);
+        return QueueBuilder.durable(queueName).build();
     }
 
     // Bind the Queue to the Exchange with the routing key
     @Bean
-    public Binding userBinding(Queue userCreatedQueue, TopicExchange userExchange, @Value("${user.created.routing.key}") String routingKey) {
+    public Binding userBinding(Queue userCreatedQueue, TopicExchange userExchange,
+                               @Value("${user.created.routing.key}") String routingKey) {
         return BindingBuilder.bind(userCreatedQueue).to(userExchange).with(routingKey);
     }
 

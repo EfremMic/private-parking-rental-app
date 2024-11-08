@@ -23,25 +23,32 @@ public class NotificationListener {
         String eventType = (String) event.get("eventType");
         logger.info("Received event: {}", event);  // Log entire event for debugging
 
-        if ("USER_CREATED".equals(eventType)) {
-            handleUserCreatedEvent(event);
-        } else if ("USER_LOGGED_IN".equals(eventType)) {
-            handleUserLoginEvent(event);
-        } else {
-            logger.warn("Received unknown event type: {}", eventType);
+        switch (eventType) {
+            case "USER_CREATED":
+                handleUserCreatedEvent(event);
+                break;
+            case "USER_LOGGED_IN":
+                handleUserLoginEvent(event);
+                break;
+            default:
+                logger.warn("Received unknown event type: {}", eventType);
+                break;
         }
     }
 
-
     private void handleUserCreatedEvent(Map<String, Object> event) {
-        // Extracting user email and name from the event to send the welcome email
         String userEmail = (String) event.get("email");
         String userName = (String) event.get("name");
 
         logger.info("Processing USER_CREATED event for email: {}", userEmail);
 
-        // Calling the service to send the welcome email
-        notificationService.sendWelcomeEmail(userEmail, userName);
+        // Call the service to send the welcome email
+        try {
+            notificationService.sendWelcomeEmail(userEmail, userName);
+            logger.info("Welcome email sent to {}", userEmail);
+        } catch (Exception e) {
+            logger.error("Failed to send welcome email to {}: {}", userEmail, e.getMessage());
+        }
     }
 
     private void handleUserLoginEvent(Map<String, Object> event) {
@@ -49,7 +56,12 @@ public class NotificationListener {
 
         logger.info("Processing USER_LOGGED_IN event for user ID: {}", userId);
 
-        // You could implement additional actions for the login event if needed
-        notificationService.sendLoginNotification(userId);
+        // Additional actions for login events
+        try {
+            notificationService.sendLoginNotification(userId);
+            logger.info("Login notification sent for user ID {}", userId);
+        } catch (Exception e) {
+            logger.error("Failed to send login notification for user ID {}: {}", userId, e.getMessage());
+        }
     }
 }

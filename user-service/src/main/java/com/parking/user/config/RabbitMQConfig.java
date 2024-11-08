@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AmqpConfig {
+public class RabbitMQConfig {
 
     // Declare the Topic Exchange
     @Bean
@@ -18,12 +18,13 @@ public class AmqpConfig {
     // Declare the Queue
     @Bean
     public Queue userQueue(@Value("${user.queue.name}") String queueName) {
-        return new Queue(queueName, true);
+        return QueueBuilder.durable(queueName).build();
     }
 
     // Bind the Queue to the Exchange with the routing key
     @Bean
-    public Binding userBinding(Queue userQueue, TopicExchange userExchange, @Value("${user.created.routing.key}") String routingKey) {
+    public Binding userBinding(Queue userQueue, TopicExchange userExchange,
+                               @Value("${user.created.routing.key}") String routingKey) {
         return BindingBuilder.bind(userQueue).to(userExchange).with(routingKey);
     }
 
