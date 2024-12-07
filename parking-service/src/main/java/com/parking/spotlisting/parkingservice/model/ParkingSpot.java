@@ -1,57 +1,66 @@
 package com.parking.spotlisting.parkingservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "parking_spots")
+@Table(name = "parking_spots", indexes = @Index(columnList = "userId"))
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ParkingSpot {
 
     @Id
-
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
     private String name;
-    private String location;
+
+    @NotNull
+    @Size(min = 3, max = 50, message = "Region must be between 3 and 50 characters")
+    private String region;
+
+    @NotNull
     private Double price;
 
+    @NotNull(message = "Start date is required")
+    private LocalDate availableStartDate;
 
+    @NotNull(message = "End date is required")
+    private LocalDate availableEndDate;
 
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    private String description;
 
+    @Embedded
+    private Location location;
 
+    @NotNull
+    private Long userId; // Publisher (user ID)
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    @Embeddable
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Location {
+        @NotNull
+        @Size(min = 3, max = 100, message = "Address name must be between 3 and 100 characters")
+        private String addressName;
+
+        private String gateNumber;
+
+        private String postBoxNumber;
+
+        @NotNull
+        @Size(min = 2, max = 50, message = "City must be between 2 and 50 characters")
+        private String city;
     }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-
 }

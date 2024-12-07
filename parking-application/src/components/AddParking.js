@@ -1,53 +1,74 @@
 import React, { useState } from 'react';
 
 const AddParking = ({ userId, onParkingAdded }) => {
-    const [parkingData, setParkingData] = useState({
+    const initialParkingData = {
         name: '',
-        location: '',
-        price: ''
-    });
+        region: '',
+        price: '',
+        availableStartDate: '',
+        availableEndDate: '',
+        description: '',
+        location: {
+            addressName: '',
+            gateNumber: '',
+            postBoxNumber: '',
+            city: '',
+        },
+    };
+
+    const [parkingData, setParkingData] = useState(initialParkingData);
     const [message, setMessage] = useState('');
+    const [error, setError] = useState(null); // For detailed error handling
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setParkingData(prevData => ({
-            ...prevData,
-            [name]: value
-        }));
+
+        if (name in parkingData.location) {
+            setParkingData((prevData) => ({
+                ...prevData,
+                location: {
+                    ...prevData.location,
+                    [name]: value,
+                },
+            }));
+        } else {
+            setParkingData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
+    };
+
+    const resetForm = () => {
+        setParkingData(initialParkingData);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const dataToSend = {
-            ...parkingData,
-            userId: userId // Ensure userId is passed as expected by the backend
-        };
+        const dataToSend = { ...parkingData, userId };
 
         try {
-            const response = await fetch("http://localhost:8082/api/parking/add", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            const response = await fetch('http://localhost:8082/api/parking/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend),
             });
 
-            // Check for specific status codes and handle accordingly
-            if (response.status === 201 || response.ok) { // Adjusted to handle 201 Created
-                const data = await response.json();
-                console.log("Parking spot added:", data);
-                setMessage("Parking spot added successfully!");
-
-                // Call the callback to update the parking spots list in the parent component
-                onParkingAdded(data);
+            if (response.ok) {
+                const newParkingSpot = await response.json();
+                onParkingAdded(newParkingSpot); // Notify parent of new parking spot
+                resetForm();
+                setMessage('Parking spot added successfully!');
+                setError(null); // Clear any previous errors
             } else {
-                throw new Error(`Unexpected response status: ${response.status}`);
+                const errorDetails = await response.json();
+                throw new Error(errorDetails.message || 'Failed to add parking spot');
             }
-
-        } catch (error) {
-            console.error("Error adding parking:", error);
-            setMessage("Error adding parking.");
+        } catch (err) {
+            console.error('Error adding parking:', err);
+            setError(err.message);
+            setMessage('Error adding parking. Please check your input and try again.');
         }
     };
 
@@ -66,11 +87,11 @@ const AddParking = ({ userId, onParkingAdded }) => {
                     />
                 </label>
                 <label>
-                    Location:
+                    Region:
                     <input
                         type="text"
-                        name="location"
-                        value={parkingData.location}
+                        name="region"
+                        value={parkingData.region}
                         onChange={handleChange}
                         required
                     />
@@ -85,9 +106,79 @@ const AddParking = ({ userId, onParkingAdded }) => {
                         required
                     />
                 </label>
+                <label>
+                    Available Start Date:
+                    <input
+                        type="date"
+                        name="availableStartDate"
+                        value={parkingData.availableStartDate}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
+                <label>
+                    Available End Date:
+                    <input
+                        type="date"
+                        name="availableEndDate"
+                        value={parkingData.availableEndDate}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
+                <label>
+                    Description:
+                    <textarea
+                        name="description"
+                        value={parkingData.description}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
+                <fieldset>
+                    <legend>Location Details:</legend>
+                    <label>
+                        Address Name:
+                        <input
+                            type="text"
+                            name="addressName"
+                            value={parkingData.location.addressName}
+                            onChange={handleChange}
+                            required
+                        />
+                    </label>
+                    <label>
+                        Gate Number:
+                        <input
+                            type="text"
+                            name="gateNumber"
+                            value={parkingData.location.gateNumber}
+                            onChange={handleChange}
+                        />
+                    </label>
+                    <label>
+                        Post Box Number:
+                        <input
+                            type="text"
+                            name="postBoxNumber"
+                            value={parkingData.location.postBoxNumber}
+                            onChange={handleChange}
+                        />
+                    </label>
+                    <label>
+                        City:
+                        <input
+                            type="text"
+                            name="city"
+                            value={parkingData.location.city}
+                            onChange={handleChange}
+                        />
+                    </label>
+                </fieldset>
                 <button type="submit">Add Parking</button>
             </form>
             {message && <p>{message}</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );
 };

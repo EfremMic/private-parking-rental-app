@@ -1,22 +1,45 @@
-
 package com.parking.spotlisting.parkingservice.dto;
 
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Data
 public class ParkingSpotRequest {
+    @NotNull(message = "Name is required")
     private String name;
-    private String location;
+
+    @NotNull(message = "Region is required")
+    private String region;
+
+    @NotNull(message = "Price is required")
     private Double price;
-    private Long userId;
 
-    // Getters and setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    @NotNull(message = "Available start date is required")
+    private LocalDate availableStartDate;
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    @NotNull(message = "Available end date is required")
+    private LocalDate availableEndDate;
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    private String description; // Optional field
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    @NotNull(message = "Location is required")
+    private Location location;
+
+    @NotNull(message = "User ID is required")
+    private Long userId; // Publisher's User ID
+
+    @Data
+    public static class Location {
+        @NotNull(message = "Address name is required")
+        private String addressName;
+
+        private String gateNumber; // Optional field
+
+        private String postBoxNumber; // Optional field
+
+        @NotNull(message = "City is required")
+        private String city;
+    }
 }

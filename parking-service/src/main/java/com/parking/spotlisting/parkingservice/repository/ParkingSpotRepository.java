@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> {
-
+    List<ParkingSpot> findByUserId(Long userId); // Fetch parking spots by user ID
 }
