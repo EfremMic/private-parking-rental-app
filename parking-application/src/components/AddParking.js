@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AddParking = ({ userId, onParkingAdded }) => {
+const AddParking = ({ userId, user, onParkingAdded }) => {
     const initialParkingData = {
         name: '',
         region: '',
@@ -18,7 +18,6 @@ const AddParking = ({ userId, onParkingAdded }) => {
 
     const [parkingData, setParkingData] = useState(initialParkingData);
     const [message, setMessage] = useState('');
-    const [error, setError] = useState(null); // For detailed error handling
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -46,7 +45,14 @@ const AddParking = ({ userId, onParkingAdded }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const dataToSend = { ...parkingData, userId };
+        const dataToSend = {
+            ...parkingData,
+            userId,
+            publisherName: user?.name || 'Unknown User',
+            publisherEmail: user?.email || 'Unknown Email', // Include the publisherEmail
+        };
+
+        console.log('Data being sent to server:', JSON.stringify(dataToSend, null, 2));
 
         try {
             const response = await fetch('http://localhost:8082/api/parking/add', {
@@ -57,20 +63,21 @@ const AddParking = ({ userId, onParkingAdded }) => {
 
             if (response.ok) {
                 const newParkingSpot = await response.json();
-                onParkingAdded(newParkingSpot); // Notify parent of new parking spot
+                onParkingAdded(newParkingSpot);
                 resetForm();
                 setMessage('Parking spot added successfully!');
-                setError(null); // Clear any previous errors
             } else {
                 const errorDetails = await response.json();
-                throw new Error(errorDetails.message || 'Failed to add parking spot');
+                console.error('Server response error:', errorDetails);
+                setMessage(`Error adding parking spot: ${errorDetails.message || 'Unknown error'}`);
             }
         } catch (err) {
             console.error('Error adding parking:', err);
-            setError(err.message);
             setMessage('Error adding parking. Please check your input and try again.');
         }
     };
+
+
 
     return (
         <div>
@@ -172,13 +179,13 @@ const AddParking = ({ userId, onParkingAdded }) => {
                             name="city"
                             value={parkingData.location.city}
                             onChange={handleChange}
+                            required
                         />
                     </label>
                 </fieldset>
                 <button type="submit">Add Parking</button>
             </form>
             {message && <p>{message}</p>}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );
 };

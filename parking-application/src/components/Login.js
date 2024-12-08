@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 
-function Login() {
+function Login({ setUser }) {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -27,13 +26,13 @@ function Login() {
                 throw new Error('User not authenticated');
             })
             .then((data) => {
-                // Redirect to the saved path or a default page
+                setUser(data); // Update the user state in the parent component
                 const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/welcome';
-                sessionStorage.removeItem('redirectAfterLogin');
-                navigate(redirectPath);
+                sessionStorage.removeItem('redirectAfterLogin'); // Clean up after use
+                navigate(redirectPath); // Redirect to the intended path or welcome page
             })
-            .catch(() => {});
-    }, [navigate]);
+            .catch(() => {}); // Ignore errors for unauthenticated users
+    }, [navigate, setUser]);
 
     return (
         <div>

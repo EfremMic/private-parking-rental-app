@@ -22,22 +22,27 @@ public class ParkingSpotRequest {
     @NotNull(message = "Available end date is required")
     private LocalDate availableEndDate;
 
-    private String description; // Optional field
+    private String description;
 
     @NotNull(message = "Location is required")
     private Location location;
 
     @NotNull(message = "User ID is required")
-    private Long userId; // Publisher's User ID
+    private Long userId;
+
+    @NotNull(message = "Publisher Name is required")
+    private String publisherName;
+
+    @NotNull(message = "Publisher Email is required")
+    private String publisherEmail;
 
     @Data
     public static class Location {
         @NotNull(message = "Address name is required")
         private String addressName;
 
-        private String gateNumber; // Optional field
-
-        private String postBoxNumber; // Optional field
+        private String gateNumber;
+        private String postBoxNumber;
 
         @NotNull(message = "City is required")
         private String city;

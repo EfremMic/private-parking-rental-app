@@ -31,36 +31,38 @@ public class ParkingSpot {
     @NotNull
     private Double price;
 
-    @NotNull(message = "Start date is required")
+    @NotNull
     private LocalDate availableStartDate;
 
-    @NotNull(message = "End date is required")
+    @NotNull
     private LocalDate availableEndDate;
 
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    @Size(max = 500)
     private String description;
 
     @Embedded
     private Location location;
 
     @NotNull
-    private Long userId; // Publisher (user ID)
+    private Long userId;
 
+    @NotNull
+    private String publisherName;
+
+   @NotNull
+   private String publisherEmail;
     @Embeddable
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Location {
         @NotNull
-        @Size(min = 3, max = 100, message = "Address name must be between 3 and 100 characters")
         private String addressName;
 
         private String gateNumber;
-
         private String postBoxNumber;
 
         @NotNull
-        @Size(min = 2, max = 50, message = "City must be between 2 and 50 characters")
         private String city;
     }
 }

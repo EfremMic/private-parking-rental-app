@@ -14,7 +14,7 @@ const ContactOwner = ({ user }) => {
         };
 
         try {
-            const response = await fetch('http://localhost:8082/api/contact', {
+            const response = await fetch('http://localhost:8082/api/parking/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend),
