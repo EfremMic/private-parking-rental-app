@@ -2,31 +2,37 @@ import React, { useEffect, useState } from 'react';
 import Login from '../components/Login';
 import SearchParking from '../components/SearchParking'; // Import the SearchParking component
 import { useNavigate } from 'react-router-dom';
-
+import '../css/Home.css'; // Import CSS for styling
 
 const Home = () => {
     const [parkingSpots, setParkingSpots] = useState([]);
-    const [filteredParkingSpots, setFilteredParkingSpots] = useState([]); // State for filtered spots
+    const [filteredParkingSpots, setFilteredParkingSpots] = useState([]);
     const [message, setMessage] = useState('');
-    const [user, setUser] = useState(null); // To track logged-in user
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Fetch all parking spots
         fetch("http://localhost:8082/api/parking/list")
-            .then(response => {
+            .then((response) => {
                 if (!response.ok) throw new Error('Failed to fetch parking spots');
                 return response.json();
             })
-            .then(data => {
+            .then((data) => {
                 setParkingSpots(data);
                 setFilteredParkingSpots(data); // Initialize filtered spots with all spots
             })
             .catch(() => setMessage('Error fetching parking spots.'));
     }, []);
 
+    const handleRent = (parkingSpotId) => {
+        sessionStorage.setItem('redirectParkingSpotId', parkingSpotId);
+        navigate('/login');
+    };
+
     const handleSearch = (city, startDate, endDate) => {
         // Filter parking spots based on city and date range
-        const filtered = parkingSpots.filter(spot => {
+        const filtered = parkingSpots.filter((spot) => {
             const matchesCity = city ? spot.location?.city?.toLowerCase().includes(city.toLowerCase()) : true;
             const matchesDate =
                 (!startDate || new Date(spot.availableStartDate) <= new Date(startDate)) &&
@@ -38,23 +44,15 @@ const Home = () => {
         setFilteredParkingSpots(filtered);
     };
 
-    const handleRentOrContact = (parkingSpot) => {
-        const isLoggedIn = !!localStorage.getItem('user'); // Check login status
-        if (!isLoggedIn) {
-            localStorage.setItem('selectedParking', JSON.stringify(parkingSpot)); // Save the parking spot
-            navigate('/login'); // Redirect to login
-        } else {
-            navigate(`/parking/${parkingSpot.id}`); // Go to parking details
-        }
-    };
-
     return (
-        <div>
+        <div className="home-container">
             {!user ? (
                 // Show login component if not logged in
-                <Login />
+                <div className="login-container">
+                    <Login setUser={setUser} />
+                </div>
             ) : (
-                <div>
+                <div className="user-info">
                     <h1>Welcome, {user.name}!</h1>
                     <p>Email: {user.email}</p>
                 </div>
@@ -63,36 +61,46 @@ const Home = () => {
             {/* Add SearchParking component */}
             <SearchParking onSearch={handleSearch} />
 
-            <h2>Parking Spots Available for Rent</h2>
-            {message && <p>{message}</p>}
-            <ul>
+            <h2 className="section-title">Parking Spots Available for Rent</h2>
+            {message && <p className="error-message">{message}</p>}
+            <div className="parking-list">
                 {filteredParkingSpots.length > 0 ? (
-                    filteredParkingSpots.map(parkingSpot => (
-                        <li key={parkingSpot.id}>
-                            <h3>{parkingSpot.name}</h3>
-                            <p>Region: {parkingSpot.region}</p>
-                            <p>Price: ${parkingSpot.price}</p>
+                    filteredParkingSpots.map((parkingSpot) => (
+                        <div key={parkingSpot.id} className="parking-card">
+                            <h3 className="parking-name">{parkingSpot.name}</h3>
                             <p>
-                                Availability: {parkingSpot.availableStartDate} -{' '}
+                                <strong>Region:</strong> {parkingSpot.region}
+                            </p>
+                            <p>
+                                <strong>Price:</strong> {parkingSpot.price} NOK
+                            </p>
+                            <p>
+                                <strong>Availability:</strong> {parkingSpot.availableStartDate} -{' '}
                                 {parkingSpot.availableEndDate}
                             </p>
-                            <p>Description: {parkingSpot.description || 'No description provided.'}</p>
-                            <h4>Location:</h4>
-                            <ul>
-                                <li>Address: {parkingSpot.location?.addressName || 'Not provided'}</li>
-                                <li>Gate Number: {parkingSpot.location?.gateNumber || 'N/A'}</li>
-                                <li>Post Box: {parkingSpot.location?.postBoxNumber || 'N/A'}</li>
-                                <li>City: {parkingSpot.location?.city || 'Not provided'}</li>
-                            </ul>
-                            <button onClick={() => handleRentOrContact(parkingSpot)}>
+                            <p className="description">
+                                <strong>Description:</strong> {parkingSpot.description || 'No description provided.'}
+                            </p>
+                            <div className="location-info">
+                                <p>
+                                    <strong>Address:</strong> {parkingSpot.location?.addressName || 'Not provided'}
+                                </p>
+                                <p>
+                                    <strong>City:</strong> {parkingSpot.location?.city || 'Not provided'}
+                                </p>
+                            </div>
+                            <button
+                                className="action-button"
+                                onClick={() => handleRent(parkingSpot.id)}
+                            >
                                 Rent/Contact Owner
                             </button>
-                        </li>
+                        </div>
                     ))
                 ) : (
-                    <p>No parking spots match your search criteria.</p>
+                    <p className="no-results">No parking spots match your search criteria.</p>
                 )}
-            </ul>
+            </div>
         </div>
     );
 };

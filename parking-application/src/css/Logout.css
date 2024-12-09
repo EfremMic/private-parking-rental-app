@@ -1,0 +1,40 @@
+/* Logout Button Container */
+.logout-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Logout Button Styling */
+.logout-button {
+    background-color: #ff4d4f; /* Red button color for logout */
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.logout-button:hover {
+    background-color: #d9363e;
+    transform: scale(1.05);
+}
+
+.logout-button:focus {
+    outline: none;
+    box-shadow: 0 0 8px rgba(255, 77, 79, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .logout-button {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+}

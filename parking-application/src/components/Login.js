@@ -1,46 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../css/Login.css';
 
-function Login({ setUser }) {
+const Login = ({ setUser }) => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const handleLogin = () => {
-        try {
-            // Redirect user to the OAuth login
-            window.location.href = 'http://localhost:8081/oauth2/authorization/google';
-        } catch (e) {
-            setError('Failed to initiate login. Please try again.');
-            console.error('Error during login:', e);
-        }
-    };
-
-    // After login success, use useEffect to handle redirect
     useEffect(() => {
+        console.log('%c[Login] Checking Session Storage', 'color: green; font-weight: bold;');
+        console.log('redirectParkingSpotId:', sessionStorage.getItem('redirectParkingSpotId'));
+
         fetch('http://localhost:8081/api/users/me', {
             method: 'GET',
             credentials: 'include',
         })
             .then((response) => {
-                if (response.ok) return response.json();
-                throw new Error('User not authenticated');
+                if (!response.ok) throw new Error('User not authenticated');
+                return response.json();
             })
             .then((data) => {
-                setUser(data); // Update the user state in the parent component
-                const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/welcome';
-                sessionStorage.removeItem('redirectAfterLogin'); // Clean up after use
-                navigate(redirectPath); // Redirect to the intended path or welcome page
+                console.log('%c[Login] User authenticated', 'color: green; font-weight: bold;', data);
+                setUser(data);
+                const redirectParkingSpotId = sessionStorage.getItem('redirectParkingSpotId');
+                if (redirectParkingSpotId) {
+                    console.log('%c[Login] Redirecting to parking details for spot:', 'color: blue;', redirectParkingSpotId);
+                    sessionStorage.removeItem('redirectParkingSpotId');
+                    navigate(`/parking/${redirectParkingSpotId}`);
+                } else {
+                    console.log('%c[Login] No parking spot in session. Redirecting to /welcome', 'color: blue;');
+                    navigate('/welcome');
+                }
             })
-            .catch(() => {}); // Ignore errors for unauthenticated users
+            .catch((e) => {
+                console.error('Error during login:', e);
+                setError('Failed to authenticate. Please try again.');
+            });
     }, [navigate, setUser]);
 
+    const handleLogin = () => {
+        window.location.href = 'http://localhost:8081/oauth2/authorization/google';
+    };
+
     return (
-        <div>
-            <h2>Login</h2>
-            <button onClick={handleLogin}>Login with Google</button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="login-container">
+            <button
+                className="login-button"
+                onClick={handleLogin}
+                aria-label="Login with Google"
+            >
+                Login with Google
+            </button>
+
         </div>
     );
-}
+};
 
 export default Login;

@@ -5,8 +5,6 @@ import Welcome from './components/Welcome';
 import Login from './components/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 import ParkingDetails from './pages/ParkingDetails';
-import RentForm from './pages/RentForm';
-import ContactOwner from './pages/ContactOwner';
 
 function App() {
     const [user, setUser] = useState(null);
@@ -18,27 +16,25 @@ function App() {
             credentials: 'include',
         })
             .then((response) => {
-                if (!response.ok) {
-                    console.log('User not logged in'); // Debug log
-                    throw new Error('Failed to fetch user data');
-                }
+                if (!response.ok) throw new Error('User not logged in');
                 return response.json();
             })
             .then((data) => {
-                console.log('Logged-in user data:', data); // Debug log
                 setUser(data);
 
-                // Redirect user to their intended route after login
-                const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/welcome';
-                console.log('Redirecting to:', redirectPath); // Debug log
-                sessionStorage.removeItem('redirectAfterLogin'); // Clear after use
-                navigate(redirectPath);
+                const redirectParkingSpotId = sessionStorage.getItem('redirectParkingSpotId');
+                if (redirectParkingSpotId) {
+                    sessionStorage.removeItem('redirectParkingSpotId');
+                    console.log('Redirecting to parking details for:', redirectParkingSpotId);
+                    navigate(`/parking/${redirectParkingSpotId}`);
+                } else {
+                    navigate('/welcome');
+                }
             })
             .catch((error) => {
                 console.error('Error fetching user:', error);
             });
     }, [navigate]);
-
 
     const handleLogout = () => {
         setUser(null);
@@ -49,7 +45,6 @@ function App() {
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login setUser={setUser} />} />
-
             <Route
                 path="/welcome"
                 element={
@@ -62,23 +57,7 @@ function App() {
                 path="/parking/:id"
                 element={
                     <ErrorBoundary>
-                        <ParkingDetails user={user} />
-                    </ErrorBoundary>
-                }
-            />
-            <Route
-                path="/rent/:id"
-                element={
-                    <ErrorBoundary>
-                        <RentForm user={user} />
-                    </ErrorBoundary>
-                }
-            />
-            <Route
-                path="/contact/:id"
-                element={
-                    <ErrorBoundary>
-                        <ContactOwner user={user} />
+                        <ParkingDetails />
                     </ErrorBoundary>
                 }
             />

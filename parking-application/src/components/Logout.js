@@ -1,4 +1,5 @@
 import React from 'react';
+import '../css/Logout.css';
 
 const Logout = ({ onLogout }) => {
     const handleLogout = () => {
@@ -8,7 +9,11 @@ const Logout = ({ onLogout }) => {
     };
 
     return (
-        <button onClick={handleLogout}>Logout</button>
+        <div className="logout-container">
+            <button className="logout-button" onClick={handleLogout}>
+                Logout
+            </button>
+        </div>
     );
 };
 

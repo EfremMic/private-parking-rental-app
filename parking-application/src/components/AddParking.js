@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../css/AddParking.css';
+
 
 const AddParking = ({ userId, user, onParkingAdded }) => {
     const initialParkingData = {
@@ -49,10 +51,8 @@ const AddParking = ({ userId, user, onParkingAdded }) => {
             ...parkingData,
             userId,
             publisherName: user?.name || 'Unknown User',
-            publisherEmail: user?.email || 'Unknown Email', // Include the publisherEmail
+            publisherEmail: user?.email || 'Unknown Email',
         };
-
-        console.log('Data being sent to server:', JSON.stringify(dataToSend, null, 2));
 
         try {
             const response = await fetch('http://localhost:8082/api/parking/add', {
@@ -68,53 +68,56 @@ const AddParking = ({ userId, user, onParkingAdded }) => {
                 setMessage('Parking spot added successfully!');
             } else {
                 const errorDetails = await response.json();
-                console.error('Server response error:', errorDetails);
-                setMessage(`Error adding parking spot: ${errorDetails.message || 'Unknown error'}`);
+                setMessage(`Error: ${errorDetails.message || 'Something went wrong.'}`);
             }
         } catch (err) {
-            console.error('Error adding parking:', err);
-            setMessage('Error adding parking. Please check your input and try again.');
+            console.error(err);
+            setMessage('Error adding parking. Please try again.');
         }
     };
 
-
-
     return (
-        <div>
+        <div className="add-parking-form">
             <h2>Add Parking Spot</h2>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Name:
+                    Name <span className="required">*</span>
                     <input
                         type="text"
                         name="name"
                         value={parkingData.name}
                         onChange={handleChange}
+                        placeholder="Enter parking spot name"
                         required
                     />
                 </label>
                 <label>
-                    Region:
-                    <input
-                        type="text"
+                    Region <span className="required">*</span>
+                    <select
                         name="region"
                         value={parkingData.region}
                         onChange={handleChange}
                         required
-                    />
+                    >
+                        <option value="">Select Region</option>
+                        <option value="Oslo">Oslo</option>
+                        <option value="Vestland">Vestland</option>
+                        {/* Add all Norwegian regions */}
+                    </select>
                 </label>
                 <label>
-                    Price:
+                    Price <span className="required">*</span>
                     <input
                         type="number"
                         name="price"
                         value={parkingData.price}
                         onChange={handleChange}
+                        placeholder="Enter price in NOK"
                         required
                     />
                 </label>
                 <label>
-                    Available Start Date:
+                    Available Start Date <span className="required">*</span>
                     <input
                         type="date"
                         name="availableStartDate"
@@ -124,7 +127,7 @@ const AddParking = ({ userId, user, onParkingAdded }) => {
                     />
                 </label>
                 <label>
-                    Available End Date:
+                    Available End Date <span className="required">*</span>
                     <input
                         type="date"
                         name="availableEndDate"
@@ -134,58 +137,64 @@ const AddParking = ({ userId, user, onParkingAdded }) => {
                     />
                 </label>
                 <label>
-                    Description:
+                    Description
                     <textarea
                         name="description"
                         value={parkingData.description}
                         onChange={handleChange}
-                        required
+                        placeholder="Add a short description (e.g., close to downtown)"
                     />
                 </label>
                 <fieldset>
-                    <legend>Location Details:</legend>
+                    <legend>Location Details</legend>
                     <label>
-                        Address Name:
+                        Address Name <span className="required">*</span>
                         <input
                             type="text"
                             name="addressName"
                             value={parkingData.location.addressName}
                             onChange={handleChange}
+                            placeholder="e.g., Sletten veien"
                             required
                         />
                     </label>
                     <label>
-                        Gate Number:
+                        Gate Number
                         <input
                             type="text"
                             name="gateNumber"
                             value={parkingData.location.gateNumber}
                             onChange={handleChange}
+                            placeholder="e.g., 123"
                         />
                     </label>
                     <label>
-                        Post Box Number:
+                        Post Box Number
                         <input
                             type="text"
                             name="postBoxNumber"
                             value={parkingData.location.postBoxNumber}
                             onChange={handleChange}
+                            placeholder="e.g., 5678"
                         />
                     </label>
                     <label>
-                        City:
+                        City <span className="required">*</span>
                         <input
                             type="text"
                             name="city"
                             value={parkingData.location.city}
                             onChange={handleChange}
+                            placeholder="e.g., Bergen"
                             required
                         />
                     </label>
                 </fieldset>
-                <button type="submit">Add Parking</button>
+                <button className="primary-button" type="submit">
+                    Add Parking Spot
+                </button>
             </form>
-            {message && <p>{message}</p>}
+            {message && <p className="message">{message}</p>}
         </div>
     );
 };
