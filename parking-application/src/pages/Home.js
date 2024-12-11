@@ -114,6 +114,7 @@ export default Home;
 
 
 
+
 const Home = () => {
     const [parkingSpots, setParkingSpots] = useState([]);
     const [filteredParkingSpots, setFilteredParkingSpots] = useState([]);
@@ -136,8 +137,12 @@ const Home = () => {
     }, []);
 
     const handleRentOrContact = (parkingSpotId) => {
-        sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingSpotId}`); // Store /parking/1, /parking/2, etc.
-        navigate('/login'); // Send user to login page
+        if (!user) {
+            sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingSpotId}`); // Lagre redirect URL
+            navigate('/login');
+        } else {
+            navigate(`/parking/${parkingSpotId}`);
+        }
     };
 
     const handleSearch = (city, startDate, endDate) => {

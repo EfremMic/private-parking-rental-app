@@ -12,54 +12,38 @@ const Welcome = ({ user, onLogout }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (user) {
-            Promise.all([
-                // Fetch parking spots added by the user
-                fetch(`http://localhost:8082/api/parking/user/${user.id}/list`)
-                    .then((response) => {
-                        if (!response.ok) throw new Error('Failed to fetch user parking spots');
-                        return response.json();
-                    })
-                    .then((data) => setUserParkingSpots(data)),
-
-                // Fetch all parking spots
-                fetch('http://localhost:8082/api/parking/list')
-                    .then((response) => {
-                        if (!response.ok) throw new Error('Failed to fetch parking spots');
-                        return response.json();
-                    })
-                    .then((data) => setAllParkingSpots(data)),
-            ])
-                .catch((error) => {
-                    console.error('Error fetching data:', error);
-                    setMessage('Error fetching parking spots.');
-                })
-                .finally(() => setLoading(false));
-        }
-    }, [user]);
-
-    const handleParkingAdded = (newParkingSpot) => {
-        setUserParkingSpots((prev) => [...prev, newParkingSpot]);
-        setAllParkingSpots((prev) => [...prev, newParkingSpot]);
-    };
-
-    const handleAction = (parkingId) => {
         if (!user) {
-            sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingId}`);
+            console.log("User is not logged in. Redirecting to login.");
             navigate('/login');
-        } else {
-            navigate(`/parking/${parkingId}`);
+            return;
         }
-    };
 
-    if (!user) {
-        return (
-            <div className="welcome-container">
-                <h1>Please log in to access your dashboard.</h1>
-                <button className="primary-button" onClick={() => navigate('/login')}>Go to Login</button>
-            </div>
-        );
-    }
+        // Hent parkeringsplasser hvis bruker er logget inn
+        console.log("Fetching parking spots for user:", user);
+        Promise.all([
+            fetch(`http://localhost:8082/api/parking/user/${user.id}/list`)
+                .then((response) => {
+                    if (!response.ok) throw new Error('Failed to fetch user parking spots');
+                    return response.json();
+                })
+                .then((data) => setUserParkingSpots(data)),
+
+            fetch('http://localhost:8082/api/parking/list')
+                .then((response) => {
+                    if (!response.ok) throw new Error('Failed to fetch parking spots');
+                    return response.json();
+                })
+                .then((data) => setAllParkingSpots(data)),
+        ])
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+                setMessage('Error fetching parking spots. Please try again later.');
+            })
+            .finally(() => {
+                console.log("Finished loading parking spots");
+                setLoading(false);
+            });
+    }, [user, navigate]);
 
     if (loading) {
         return <div className="loading">Loading your parking spots...</div>;
@@ -73,7 +57,10 @@ const Welcome = ({ user, onLogout }) => {
             </header>
 
             <section className="form-section">
-                <AddParking userId={user.id} onParkingAdded={handleParkingAdded} />
+                <AddParking userId={user.id} onParkingAdded={(newParkingSpot) => {
+                    setUserParkingSpots((prev) => [...prev, newParkingSpot]);
+                    setAllParkingSpots((prev) => [...prev, newParkingSpot]);
+                }} />
             </section>
 
             <section className="spots-section">
@@ -102,12 +89,7 @@ const Welcome = ({ user, onLogout }) => {
                             <div key={spot.id} className="spot-card">
                                 <h3>{spot.name}</h3>
                                 <p>{spot.location?.addressName}, {spot.location?.city}</p>
-                                <p>Price: ${spot.price}</p>
-                                {user.id !== spot.userId && (
-                                    <button className="primary-button" onClick={() => handleAction(spot.id)}>
-                                        Rent/Contact Owner
-                                    </button>
-                                )}
+                                <p>Price: {spot.price} NOK</p>
                             </div>
                         ))}
                     </div>
