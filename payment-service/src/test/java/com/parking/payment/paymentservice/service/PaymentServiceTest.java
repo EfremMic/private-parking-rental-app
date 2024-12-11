@@ -6,9 +6,8 @@ import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Charge;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
@@ -22,27 +21,37 @@ import static org.mockito.Mockito.*;
 class PaymentServiceTest {
 
     private static final String TEST_STRIPE_API_KEY = "testApiKey";
-    private static final String TEST_TOKEN = "testToken";  // Fake token
+    private static final String TEST_TOKEN = "testToken";
     private static final String TEST_DESCRIPTION = "Test Payment";
     private static final Long TEST_AMOUNT = 2000L;
     private static final String TEST_CURRENCY = "usd";
+    private static final Long TEST_USER_ID = 1L;
+    private static final Long TEST_PARKING_SPOT_ID = 1L;
     private static final String CHARGE_ID = "chargeId";
     private static final String CHARGE_STATUS = "succeeded";
 
-    @InjectMocks
     private PaymentService paymentService;
+    private RabbitTemplate rabbitTemplate;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        // Inject the Stripe API key (fake key since we are mocking)
+        rabbitTemplate = mock(RabbitTemplate.class);
+        paymentService = new PaymentService(rabbitTemplate);
+        // Inject the Stripe API key
         ReflectionTestUtils.setField(paymentService, "stripeApiKey", TEST_STRIPE_API_KEY);
     }
 
     @Test
     void testChargeSuccess() throws Exception {
         // Arrange
-        PaymentRequest paymentRequest = new PaymentRequest(TEST_TOKEN, TEST_AMOUNT, TEST_CURRENCY, TEST_DESCRIPTION);
+        PaymentRequest paymentRequest = new PaymentRequest(
+                TEST_TOKEN,
+                TEST_AMOUNT,
+                TEST_CURRENCY,
+                TEST_DESCRIPTION,
+                TEST_USER_ID,
+                TEST_PARKING_SPOT_ID
+        );
 
         Charge mockCharge = mock(Charge.class);
         when(mockCharge.getId()).thenReturn(CHARGE_ID);
@@ -50,7 +59,7 @@ class PaymentServiceTest {
         when(mockCharge.getAmount()).thenReturn(TEST_AMOUNT);
         when(mockCharge.getCurrency()).thenReturn(TEST_CURRENCY);
 
-        // Mock the static method Charge.create() using mockStatic
+        // Mock the static method Charge.create()
         try (MockedStatic<Charge> mockedStatic = mockStatic(Charge.class)) {
             mockedStatic.when(() -> Charge.create(any(Map.class))).thenReturn(mockCharge);
 
@@ -71,7 +80,14 @@ class PaymentServiceTest {
     @Test
     void testChargeFailure() throws Exception {
         // Arrange
-        PaymentRequest paymentRequest = new PaymentRequest(TEST_TOKEN, TEST_AMOUNT, TEST_CURRENCY, TEST_DESCRIPTION);
+        PaymentRequest paymentRequest = new PaymentRequest(
+                TEST_TOKEN,
+                TEST_AMOUNT,
+                TEST_CURRENCY,
+                TEST_DESCRIPTION,
+                TEST_USER_ID,
+                TEST_PARKING_SPOT_ID
+        );
 
         // Simulate an InvalidRequestException during charge creation
         try (MockedStatic<Charge> mockedStatic = mockStatic(Charge.class)) {

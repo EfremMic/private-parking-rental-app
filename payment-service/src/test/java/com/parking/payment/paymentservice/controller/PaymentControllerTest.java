@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(PaymentController.class)
 public class PaymentControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -25,16 +24,25 @@ public class PaymentControllerTest {
 
     @Test
     public void testChargeCard() throws Exception {
-        // Arrange
-        PaymentRequest request = new PaymentRequest("tok_visa", 1000, "usd", "Test payment");
+        // Arrange: Update to use 6-argument constructor
+        PaymentRequest request = new PaymentRequest(
+                "tok_visa",       // Token
+                1000L,            // Amount (use long instead of int)
+                "usd",            // Currency
+                "Test payment",   // Description
+                1L,               // userId (use 1L or any other valid user ID)
+                1L                // parkingSpotId (use 1L or any other valid parking spot ID)
+        );
+
         PaymentResponse mockResponse = new PaymentResponse("ch_1ABC", "succeeded", 1000L, "usd");
 
+        // When PaymentService is called, return a mock response
         when(paymentService.charge(any(PaymentRequest.class))).thenReturn(mockResponse);
 
-        // Act & Assert
+        // Act & Assert: Make sure to include all required properties in the JSON content
         mockMvc.perform(post("/api/payments/charge")
                         .contentType("application/json")
-                        .content("{\"token\":\"tok_visa\", \"amount\":1000, \"currency\":\"usd\", \"description\":\"Test payment\"}"))
+                        .content("{\"token\":\"tok_visa\", \"amount\":1000, \"currency\":\"usd\", \"description\":\"Test payment\", \"userId\":1, \"parkingSpotId\":1}"))
                 .andExpect(status().isOk());
     }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Welcome from './components/Welcome';
@@ -6,6 +6,8 @@ import Login from './components/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 import ParkingDetails from './pages/ParkingDetails';
 
+
+/*
 function App() {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
@@ -57,7 +59,44 @@ function App() {
                 path="/parking/:id"
                 element={
                     <ErrorBoundary>
-                        <ParkingDetails />
+                        <ParkingDetails  />
+                    </ErrorBoundary>
+                }
+            />
+        </Routes>
+    );
+}
+
+export default App;
+*/
+
+
+function App() {
+    const [user, setUser] = useState(null);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        setUser(null);
+        navigate('/'); // Redirect to Home after logout
+    };
+
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login setUser={setUser} />} />
+            <Route
+                path="/welcome"
+                element={
+                    <ErrorBoundary>
+                        <Welcome user={user} onLogout={handleLogout} />
+                    </ErrorBoundary>
+                }
+            />
+            <Route
+                path="/parking/:id"
+                element={
+                    <ErrorBoundary>
+                        <ParkingDetails user={user} />
                     </ErrorBoundary>
                 }
             />
