@@ -37,6 +37,7 @@ class PaymentServiceTest {
     void setUp() {
         rabbitTemplate = mock(RabbitTemplate.class);
         paymentService = new PaymentService(rabbitTemplate);
+
         // Inject the Stripe API key
         ReflectionTestUtils.setField(paymentService, "stripeApiKey", TEST_STRIPE_API_KEY);
     }

@@ -104,7 +104,7 @@ services:
         - SPRING_RABBITMQ_PASSWORD=guest
       depends_on:
         - consul
-        - rabbitmq  # Add RabbitMQ as a dependency
+        - rabbitmq
       healthcheck:
         test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
         interval: 30s

@@ -72,6 +72,7 @@
     gap: 20px;
 }
 
+
 /* Spot Card */
 .spot-card {
     background-color: #fff;
@@ -113,4 +114,26 @@
     color: #007bff;
     text-align: center;
     margin-top: 20px;
+}
+/* Style the Rent/Contact Owner button only */
+.rent-button {
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.rent-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.rent-button:disabled {
+    background-color: #cccccc; /* Gray background for disabled */
+    color: #666666; /* Darker gray text for disabled */
+    cursor: not-allowed; /* Change cursor to "not-allowed" */
+    pointer-events: none; /* Disable click events */
 }
