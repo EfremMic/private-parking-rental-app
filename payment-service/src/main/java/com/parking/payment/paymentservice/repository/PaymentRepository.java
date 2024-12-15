@@ -1,10 +1,12 @@
 package com.parking.payment.paymentservice.repository;
 
-import com.parking.payment.paymentservice.model.PaymentRequestModel;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import com.parking.payment.paymentservice.model.Payment;
+import java.util.List;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<PaymentRequestModel, Long> {
-    // Custom query methods can be added here if needed
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    List<Payment> findByUserId(Long userId);
 }

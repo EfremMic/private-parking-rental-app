@@ -2,6 +2,7 @@ package com.parking.payment.paymentservice.service;
 
 import com.parking.payment.paymentservice.dto.PaymentRequest;
 import com.parking.payment.paymentservice.dto.PaymentResponse;
+import com.parking.payment.paymentservice.repository.PaymentRepository;
 import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Charge;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,8 @@ class PaymentServiceTest {
     @BeforeEach
     void setUp() {
         rabbitTemplate = mock(RabbitTemplate.class);
-        paymentService = new PaymentService(rabbitTemplate);
+        PaymentRepository paymentRepository = mock(PaymentRepository.class);
+        paymentService = new PaymentService(rabbitTemplate, paymentRepository);
 
         // Inject the Stripe API key
         ReflectionTestUtils.setField(paymentService, "stripeApiKey", TEST_STRIPE_API_KEY);

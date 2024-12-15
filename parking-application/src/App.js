@@ -5,6 +5,7 @@ import Welcome from './components/Welcome';
 import Login from './components/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 import ParkingDetails from './pages/ParkingDetails';
+import Checkout from './pages/Checkout';
 
 
 /*
@@ -100,6 +101,8 @@ function App() {
                     </ErrorBoundary>
                 }
             />
+            <Route path="/checkout/:id" element={<ErrorBoundary> <Checkout /></ErrorBoundary>} />
+
         </Routes>
     );
 }

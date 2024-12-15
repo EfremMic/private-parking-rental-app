@@ -14,4 +14,5 @@ public class PaymentRequestModel {
     private String description;
     private Long userId;   // ID of the user making the payment
     private Long parkingSpotId; // ID of the parking spot being rented
+
 }

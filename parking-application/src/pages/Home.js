@@ -138,12 +138,13 @@ const Home = () => {
 
     const handleRentOrContact = (parkingSpotId) => {
         if (!user) {
-            sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingSpotId}`); // Lagre redirect URL
+            sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingSpotId}`);
             navigate('/login');
         } else {
-            navigate(`/parking/${parkingSpotId}`);
+            navigate(`/checkout/${parkingSpotId}`);
         }
     };
+
 
     const handleSearch = (city, startDate, endDate) => {
         const filtered = parkingSpots.filter((spot) => {

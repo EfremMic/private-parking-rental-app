@@ -89,6 +89,7 @@ services:
         timeout: 10s
         retries: 3
 
+
   payment-service:
       build:
         context: ../payment-service  # Path to payment-service Dockerfile
@@ -103,19 +104,20 @@ services:
         - SPRING_RABBITMQ_USERNAME=guest
         - SPRING_RABBITMQ_PASSWORD=guest
       depends_on:
-        - consul
-        - rabbitmq
+        rabbitmq:
+          condition: service_healthy  # Wait until the RabbitMQ service is healthy
       healthcheck:
         test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
         interval: 30s
         timeout: 10s
         retries: 3
 
+
   api-gateway:
       build:
         context: ../apigateway  # Path to api-gateway Dockerfile
       ports:
-        - "8000:8000"  # Expose the API Gateway on port 8000
+        - "8000:8080"  # Expose the API Gateway on port 8000
       networks:
         - parking-network
       depends_on:
@@ -128,7 +130,7 @@ services:
       environment:
         - SPRING_PROFILES_ACTIVE=consul
       healthcheck:
-        test: [ "CMD", "curl", "-f", "http://localhost:8000/actuator/health" ]
+        test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
         interval: 30s
         timeout: 10s
         retries: 3

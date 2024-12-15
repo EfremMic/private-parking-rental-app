@@ -1,0 +1,55 @@
+.checkout-container {
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.parking-details {
+    margin-bottom: 20px;
+}
+
+.parking-details h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+.parking-details p {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.payment-button {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.payment-button:hover {
+    background-color: #218838;
+}
+
+.payment-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 18px;
+    margin-top: 20px;
+}
