@@ -7,8 +7,8 @@ import java.time.LocalDate;
 
 @Data
 public class ParkingSpotRequest {
-    @NotNull(message = "Name is required")
-    private String name;
+    @NotNull(message = "Title is required")
+    private String title;
 
     @NotNull(message = "Region is required")
     private String region;

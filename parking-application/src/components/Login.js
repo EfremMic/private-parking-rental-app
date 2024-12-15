@@ -73,6 +73,7 @@ const Login = ({ setUser }) => {
                 return response.json();
             })
             .then((data) => {
+                console.log('User data from /api/users/me:', data);
                 setUser(data); // Set user after login
                 const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/welcome';
                 sessionStorage.removeItem('redirectAfterLogin'); // Clear session storage

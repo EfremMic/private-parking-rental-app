@@ -19,14 +19,33 @@ public class UserService {
     private final SimpMessagingTemplate messagingTemplate;
 
     public User getOrCreateUser(OidcUser oidcUser) {
-        String email = oidcUser.getEmail();
+        final String email = oidcUser.getEmail();
+        final String profileImageUrl = oidcUser.getPicture();
+
+        // Extract the user's name from the claims
+        String name = oidcUser.getClaim("name");
+        if (name == null) {
+            String givenName = oidcUser.getClaim("given_name");
+            String familyName = oidcUser.getClaim("family_name");
+            if (givenName != null && familyName != null) {
+                name = givenName + " " + familyName;
+            } else if (givenName != null) {
+                name = givenName;
+            } else if (familyName != null) {
+                name = familyName;
+            } else {
+                name = "Unknown User"; // Last resort fallback
+            }
+        }
+        final String finalName = name;
+
         return userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setName(oidcUser.getFullName());
-            newUser.setProfileImageUrl(oidcUser.getPicture());
+            newUser.setName(finalName);
+            newUser.setProfileImageUrl(profileImageUrl);
 
-            log.info("Saving new user with email: {}", email);
+            log.info("Saving new user with email: {}, name: {}", email, finalName);
             User savedUser = userRepository.save(newUser);
 
             log.info("Publishing UserCreatedEvent for new user: {}", savedUser.getEmail());
@@ -44,7 +63,7 @@ public class UserService {
     }
 
     public User getOrCreateUser(String email, String name, String profileImageUrl) {
-        userRepository.findByEmail(email).orElseGet(() -> {
+        return userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setName(name);
@@ -55,6 +74,5 @@ public class UserService {
 
             return savedUser;
         });
-        return null;
     }
 }

@@ -138,14 +138,12 @@ const Home = () => {
 
     const handleRentOrContact = (parkingSpotId) => {
         if (!user) {
-            sessionStorage.setItem('redirectAfterLogin', `/checkout/${parkingSpotId}`);
+            sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingSpotId}`); // Lagre redirect URL
             navigate('/login');
         } else {
-            navigate(`/checkout/${parkingSpotId}`);
+            navigate(`/parking/${parkingSpotId}`);
         }
     };
-
-
 
     const handleSearch = (city, startDate, endDate) => {
         const filtered = parkingSpots.filter((spot) => {
@@ -183,7 +181,7 @@ const Home = () => {
                         <div key={parkingSpot.id} className="parking-card">
                             <h3 className="parking-name">{parkingSpot.name}</h3>
                             <p><strong>Region:</strong> {parkingSpot.region}</p>
-                            <p><strong>Price:</strong> {parkingSpot.price} NOK / Dag</p>
+                            <p><strong>Price:</strong> {parkingSpot.price} NOK</p>
                             <p><strong>Availability:</strong> {parkingSpot.availableStartDate} - {parkingSpot.availableEndDate}</p>
                             <button
                                 className="action-button"

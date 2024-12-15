@@ -29,16 +29,16 @@ public class SecurityConfig {
                         .anyRequest().permitAll())
                 .oauth2Login(oauth -> oauth
                         .loginPage("/oauth2/authorization/google")
-                        .defaultSuccessUrl("http://localhost:3000/welcome", true))  // Redirect to frontend after login
+                        .defaultSuccessUrl("http://localhost:3000/welcome", true))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("http://localhost:3000"))  // Redirect after logout
+                        .logoutSuccessUrl("http://localhost:3000"))
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .build();
     }
 
-    @Bean(name = "securityCorsConfigurer")
+    @Bean
     public WebMvcConfigurer securityCorsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -59,9 +59,12 @@ public class SecurityConfig {
             public OidcUser loadUser(OidcUserRequest oidcUserRequest) {
                 OidcUser oidcUser = super.loadUser(oidcUserRequest);
 
-                // Retrieve user's Google account details
+                // Extract user's claims
                 String email = oidcUser.getEmail();
-                String name = oidcUser.getName();
+                String name = oidcUser.getClaim("name");
+                if (name == null) {
+                    name = oidcUser.getClaim("given_name") + " " + oidcUser.getClaim("family_name");
+                }
                 String profileImageUrl = oidcUser.getPicture();
 
                 // Create or get the user in your application

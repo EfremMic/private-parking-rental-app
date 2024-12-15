@@ -18,6 +18,7 @@ const Welcome = ({ user, onLogout }) => {
             return;
         }
 
+        if (!user?.id) return;
         // Fetch parking spots for the user
         console.log("Fetching parking spots for user:", user);
         Promise.all([
@@ -64,12 +65,13 @@ const Welcome = ({ user, onLogout }) => {
     return (
         <div className="welcome-container">
             <header className="welcome-header">
-                <h1>Welcome, {user.email}!</h1>
+                <h1>Welcome, {user.name}</h1>
                 <Logout onLogout={onLogout} />
             </header>
 
             <section className="form-section">
-                <AddParking userId={user.id} onParkingAdded={(newParkingSpot) => {
+                <AddParking  user={user}
+                             userId={user.id} onParkingAdded={(newParkingSpot) => {
                     setUserParkingSpots((prev) => [...prev, newParkingSpot]);
                     setAllParkingSpots((prev) => [...prev, newParkingSpot]);
                 }} />

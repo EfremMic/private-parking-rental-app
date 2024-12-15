@@ -3,8 +3,9 @@ import '../css/AddParking.css';
 
 
 const AddParking = ({ userId, user, onParkingAdded }) => {
+
     const initialParkingData = {
-        name: '',
+        title: '',
         region: '',
         price: '',
         availableStartDate: '',
@@ -20,6 +21,10 @@ const AddParking = ({ userId, user, onParkingAdded }) => {
 
     const [parkingData, setParkingData] = useState(initialParkingData);
     const [message, setMessage] = useState('');
+
+    if (!user) {
+        return <p>Loading user information...</p>; // Wait until user is loaded
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -81,11 +86,11 @@ const AddParking = ({ userId, user, onParkingAdded }) => {
             <h2>Add Parking Spot</h2>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Name <span className="required">*</span>
+                    Title <span className="required">*</span>
                     <input
                         type="text"
-                        name="name"
-                        value={parkingData.name}
+                        name="title"
+                        value={parkingData.title}
                         onChange={handleChange}
                         placeholder="Enter parking spot name"
                         required

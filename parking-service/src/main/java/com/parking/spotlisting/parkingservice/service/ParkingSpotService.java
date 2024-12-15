@@ -27,7 +27,7 @@ public class ParkingSpotService {
 
         ParkingSpot parkingSpot = new ParkingSpot(
                 null,
-                parkingSpotRequest.getName(),
+                parkingSpotRequest.getTitle(),
                 parkingSpotRequest.getRegion(),
                 parkingSpotRequest.getPrice(),
                 parkingSpotRequest.getAvailableStartDate(),
