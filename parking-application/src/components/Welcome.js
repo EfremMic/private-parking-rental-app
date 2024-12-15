@@ -18,7 +18,7 @@ const Welcome = ({ user, onLogout }) => {
             return;
         }
 
-        // Hent parkeringsplasser hvis bruker er logget inn
+        // Fetch parking spots for the user
         console.log("Fetching parking spots for user:", user);
         Promise.all([
             fetch(`http://localhost:8082/api/parking/user/${user.id}/list`)

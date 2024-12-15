@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
 import '../css/ParkingDetails.css'; // Import the CSS file
 
+
 const ParkingDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate(); // Initialize useNavigate hook

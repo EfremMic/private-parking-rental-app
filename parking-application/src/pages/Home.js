@@ -138,12 +138,13 @@ const Home = () => {
 
     const handleRentOrContact = (parkingSpotId) => {
         if (!user) {
-            sessionStorage.setItem('redirectAfterLogin', `/parking/${parkingSpotId}`);
+            sessionStorage.setItem('redirectAfterLogin', `/checkout/${parkingSpotId}`);
             navigate('/login');
         } else {
             navigate(`/checkout/${parkingSpotId}`);
         }
     };
+
 
 
     const handleSearch = (city, startDate, endDate) => {

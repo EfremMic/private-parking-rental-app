@@ -1,17 +1,20 @@
 package com.parking.payment.paymentservice.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PaymentRequest {
+    private String token;            // Stripe token
+    private Long amount;             // Payment amount in cents
+    private String currency;         // Currency (e.g., "nok")
 
-    private String token;  // Stripe token from frontend
-    private Long amount;    // Amount to charge in cents (e.g., $10 = 1000 cents)
-    private String currency;
-    private String description;
-    private Long userId;   // ID of the user making the payment
-    private Long parkingSpotId; // ID of the parking spot being rented
+    private String description;      // Payment description
+    private Long userId;             // User ID
+    private Long parkingSpotId;      // Parking Spot ID
+
+
 }

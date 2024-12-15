@@ -7,6 +7,7 @@ import com.parking.payment.paymentservice.repository.PaymentRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
+import com.stripe.model.PaymentIntent;
 import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,11 +27,12 @@ public class PaymentService {
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
+    private final PaymentRepository paymentRepository; // PaymentRepository dependency
+    private final RabbitTemplate rabbitTemplate; // RabbitTemplate dependency
 
-    private final PaymentRepository paymentRepository; // Add PaymentRepository
-
+    // Updated constructor to accept RabbitTemplate and PaymentRepository
     public PaymentService(RabbitTemplate rabbitTemplate, PaymentRepository paymentRepository) {
-
+        this.rabbitTemplate = rabbitTemplate;
         this.paymentRepository = paymentRepository; // Inject PaymentRepository
     }
 
@@ -40,6 +42,33 @@ public class PaymentService {
         logger.info("Stripe API initialized");
     }
 
+    /**
+     * Create a PaymentIntent and return the client secret.
+     * This is used by the frontend to authenticate the payment with Stripe.
+     */
+    public Map<String, String> createPaymentIntent(PaymentRequest paymentRequest) {
+        try {
+            // Create a PaymentIntent using Stripe
+            PaymentIntent paymentIntent = PaymentIntent.create(Map.of(
+                    "amount", paymentRequest.getAmount(),
+                    "currency", paymentRequest.getCurrency(),
+                    "metadata", Map.of(
+                            "userId", String.valueOf(paymentRequest.getUserId()),
+                            "parkingSpotId", String.valueOf(paymentRequest.getParkingSpotId())
+                    )
+            ));
+
+            // Return clientSecret to the client
+            return Map.of("clientSecret", paymentIntent.getClientSecret());
+        } catch (Exception e) {
+            logger.error("Error creating PaymentIntent: {}", e.getMessage());
+            throw new RuntimeException("PaymentIntent creation failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Charge a payment using Stripe.
+     */
     public PaymentResponse charge(PaymentRequest paymentRequest) throws StripeException {
         logger.info("Processing payment request: {}", paymentRequest);
         Map<String, Object> chargeParams = createChargeParams(paymentRequest);
@@ -58,7 +87,6 @@ public class PaymentService {
                 new java.util.Date()                  // Current timestamp
         );
 
-
         paymentRepository.save(payment); // Save payment in the DB
 
         return new PaymentResponse(
@@ -69,12 +97,15 @@ public class PaymentService {
         );
     }
 
+    /**
+     * Create Stripe charge parameters.
+     */
     private Map<String, Object> createChargeParams(PaymentRequest paymentRequest) {
         Map<String, Object> chargeParams = new HashMap<>();
         chargeParams.put("amount", paymentRequest.getAmount());
         chargeParams.put("currency", paymentRequest.getCurrency());
         chargeParams.put("source", paymentRequest.getToken());
-        chargeParams.put("description", paymentRequest.getDescription());
+        chargeParams.put("description", "Payment for Parking Spot ID: " + paymentRequest.getParkingSpotId());
         return chargeParams;
     }
 

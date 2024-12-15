@@ -2,7 +2,6 @@ package com.parking.payment.paymentservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.parking.payment.paymentservice.dto.PaymentRequest;
-import com.parking.payment.paymentservice.dto.PaymentResponse;
 import com.parking.payment.paymentservice.service.PaymentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PaymentController.class)
-@AutoConfigureMockMvc(addFilters = false) // Disables CSRF filters for tests
+@AutoConfigureMockMvc(addFilters = false) // Disable CSRF filters for testing
 public class PaymentControllerTest {
 
     @Autowired
@@ -32,30 +33,52 @@ public class PaymentControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void testChargeCard() throws Exception {
-        // Arrange
-        PaymentRequest request = new PaymentRequest(
-                "tok_visa",       // Token
-                1000L,            // Amount as Long
-                "usd",            // Currency
-                "Test payment",   // Description
-                1L,               // userId as Long
-                1L                // parkingSpotId as Long
+    public void testCreatePaymentIntent_Success() throws Exception {
+        // Arrange: Input for the API request
+        PaymentRequest paymentRequest = new PaymentRequest(
+                "tok_visa", // Stripe token
+                 1000L,       // Amount in cents
+                "nok",       // Currency
+                "Payment for parking spot", // Description
+                1L,          // User ID
+                2L           // Parking Spot ID
         );
 
-        PaymentResponse mockResponse = new PaymentResponse("ch_1ABC", "succeeded", 1000L, "usd");
+        // Mocked response from PaymentService
+        Map<String, String> mockResponse = Map.of("clientSecret", "cs_test_1234567890abcdef");
 
-        // Mock the behavior of the PaymentService
-        when(paymentService.charge(any(PaymentRequest.class))).thenReturn(mockResponse);
+        // Define behavior for mocked service
+        when(paymentService.createPaymentIntent(any(PaymentRequest.class))).thenReturn(mockResponse);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/payment/charge")
+        // Act: Perform POST request to test the endpoint
+        mockMvc.perform(post("/api/payment/intent")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionId").value("ch_1ABC"))
-                .andExpect(jsonPath("$.status").value("succeeded"))
-                .andExpect(jsonPath("$.amount").value(1000L))
-                .andExpect(jsonPath("$.currency").value("usd"));
+                        .content(objectMapper.writeValueAsString(paymentRequest))) // Convert request to JSON
+                .andExpect(status().isOk()) // Assert HTTP 200 OK
+                .andExpect(jsonPath("$.clientSecret").value("cs_test_1234567890abcdef")); // Assert clientSecret in response
+    }
+
+    @Test
+    public void testCreatePaymentIntent_Error() throws Exception {
+        // Arrange: Input request
+        PaymentRequest paymentRequest = new PaymentRequest(
+                "tok_visa",
+                1000L,
+                "nok",
+                "Payment for parking spot",
+                1L,
+                2L
+        );
+
+        // Simulate failure scenario
+        when(paymentService.createPaymentIntent(any(PaymentRequest.class)))
+                .thenThrow(new RuntimeException("PaymentIntent creation failed"));
+
+        // Act & Assert: Perform POST request and expect 500 status with error message
+        mockMvc.perform(post("/api/payment/intent")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(paymentRequest)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("PaymentIntent creation failed")); // Make sure it matches
     }
 }
