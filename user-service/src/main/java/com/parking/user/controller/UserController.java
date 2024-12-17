@@ -41,7 +41,7 @@ public class UserController {
      * @param user The user data to create
      * @return The created User entity
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         log.info("Creating user with email: {}", user.getEmail());
 
