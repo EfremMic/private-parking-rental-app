@@ -45,9 +45,21 @@ const Welcome = ({ user, onLogout }) => {
             });
     }, [user, navigate]);
 
+    const handleAction = (parkingSpotId) => {
+        try {
+            console.log('User is navigating to parking spot:', parkingSpotId);
+            navigate(`/parking/${parkingSpotId}`);
+        } catch (error) {
+            console.error('Error during action:', error);
+            setMessage('Failed to perform action. Please try again later.');
+        }
+    };
+
     if (loading) {
         return <div className="loading">Loading your parking spots...</div>;
     }
+
+
 
     return (
         <div className="welcome-container">
@@ -89,7 +101,18 @@ const Welcome = ({ user, onLogout }) => {
                             <div key={spot.id} className="spot-card">
                                 <h3>{spot.name}</h3>
                                 <p>{spot.location?.addressName}, {spot.location?.city}</p>
+                                <p>Available: {spot.availableStartDate} - {spot.availableEndDate}</p>
+                                <p>Description: {spot.description || 'No description provided.'}</p>
                                 <p>Price: {spot.price} NOK</p>
+                                    <button
+                                        className="rent-button"
+                                    onClick={() => handleAction(spot.id)}
+                                    disabled={user && user.id === spot.userId} // Disable if the user owns this spot
+                                    title={user && user.id === spot.userId ? "You cannot rent your own parking spot" : "Rent "}
+                                >
+                                    {user && user.id === spot.userId ? "Your Spot" : "Rent"}
+                                </button>
+
                             </div>
                         ))}
                     </div>

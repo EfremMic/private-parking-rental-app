@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import '../css/AddParking.css';
 
-
 const AddParking = ({ userId, user, onParkingAdded }) => {
     const initialParkingData = {
         name: '',
