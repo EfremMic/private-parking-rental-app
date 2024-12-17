@@ -2,65 +2,39 @@ package com.parking.payment.paymentservice.service;
 
 import com.parking.payment.paymentservice.dto.PaymentResponse;
 import com.parking.payment.paymentservice.dto.PaymentRequest;
-import com.parking.payment.paymentservice.model.Payment;
-import com.parking.payment.paymentservice.repository.PaymentRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import jakarta.annotation.PostConstruct;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+/*
 @Service
 public class PaymentService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
-
-    @Value("${stripe.secret.key}")
-    private String stripeSecretKey;
-
-
-    private final PaymentRepository paymentRepository; // Add PaymentRepository
-
-    public PaymentService(RabbitTemplate rabbitTemplate, PaymentRepository paymentRepository) {
-
-        this.paymentRepository = paymentRepository; // Inject PaymentRepository
-    }
+    @Value("${stripe.api.key}")
+    private String stripeApiKey;
 
     @PostConstruct
     public void init() {
-        Stripe.apiKey = stripeSecretKey;
-        logger.info("Stripe API initialized");
+        Stripe.apiKey = stripeApiKey;
     }
 
     public PaymentResponse charge(PaymentRequest paymentRequest) throws StripeException {
-        logger.info("Processing payment request: {}", paymentRequest);
-        Map<String, Object> chargeParams = createChargeParams(paymentRequest);
+        Map<String, Object> chargeParams = new HashMap<>();
+        chargeParams.put("amount", paymentRequest.getAmount());
+        chargeParams.put("currency", paymentRequest.getCurrency());
+        chargeParams.put("source", paymentRequest.getToken()); // Stripe token
+        chargeParams.put("description", paymentRequest.getDescription());
 
+        // Create the charge using Stripe's API
         Charge charge = Charge.create(chargeParams);
-        logger.info("Payment processed successfully. Charge ID: {}, Status: {}", charge.getId(), charge.getStatus());
 
-        // Save the payment record in the database
-        Payment payment = new Payment(
-                paymentRequest.getUserId(),           // User ID
-                paymentRequest.getParkingSpotId(),    // Parking Spot ID
-                charge.getId(),                       // Stripe Charge ID
-                charge.getAmount(),                   // Amount in cents
-                charge.getCurrency(),                 // Currency (e.g., "nok")
-                charge.getStatus(),                   // Payment status (e.g., "succeeded")
-                new java.util.Date()                  // Current timestamp
-        );
-
-
-        paymentRepository.save(payment); // Save payment in the DB
-
+        // Convert the Charge object into a PaymentResponse
         return new PaymentResponse(
                 charge.getId(),
                 charge.getStatus(),
@@ -69,28 +43,109 @@ public class PaymentService {
         );
     }
 
-    private Map<String, Object> createChargeParams(PaymentRequest paymentRequest) {
+}*/
+
+import com.parking.payment.paymentservice.dto.PaymentResponse;
+import com.parking.payment.paymentservice.dto.PaymentRequest;
+import com.parking.payment.paymentservice.dto.PaymentResult;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
+import jakarta.annotation.PostConstruct;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+public class PaymentService {
+
+    @Value("${stripe.api.key}")
+    private String stripeApiKey;
+
+    @Value("${payment.result.queue.name}")
+    private String paymentResultQueue;
+
+    private final RabbitTemplate rabbitTemplate;
+
+    public PaymentService(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            Stripe.apiKey = stripeApiKey;
+            System.out.println("Stripe API successfully initialized");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize Stripe API: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handles incoming payment requests from RabbitMQ.
+     * @param paymentRequest PaymentRequest DTO containing payment details.
+     */
+    @RabbitListener(queues = "${payment.request.queue.name}")
+    public void handlePaymentRequest(PaymentRequest paymentRequest) {
+        System.out.println("Received payment request: " + paymentRequest);
+        try {
+            // Process the payment
+            PaymentResponse paymentResponse = charge(paymentRequest);
+
+            // Log success and publish result to RabbitMQ
+            System.out.println("Payment successful: " + paymentResponse);
+            PaymentResult paymentResult = new PaymentResult(
+                    paymentRequest.getUserId(),
+                    paymentRequest.getParkingSpotId(),
+                    true,
+                    paymentResponse.getChargeId(),
+                    null // No error message for successful payment
+            );
+            rabbitTemplate.convertAndSend(paymentResultQueue, paymentResult);
+        } catch (StripeException e) {
+            // Log failure and publish error result to RabbitMQ
+            System.err.println("Payment processing failed: " + e.getMessage());
+            PaymentResult paymentResult = new PaymentResult(
+                    paymentRequest.getUserId(),
+                    paymentRequest.getParkingSpotId(),
+                    false,
+                    null, // No charge ID for failed payment
+                    e.getMessage() // Include the error message
+            );
+            rabbitTemplate.convertAndSend(paymentResultQueue, paymentResult);
+        }
+    }
+
+    /**
+     * Charges a payment using the Stripe API.
+     * @param paymentRequest PaymentRequest DTO containing the payment details.
+     * @return PaymentResponse DTO with details of the Stripe charge.
+     * @throws StripeException if the payment fails.
+     */
+    public PaymentResponse charge(PaymentRequest paymentRequest) throws StripeException {
+        System.out.println("Initiating payment for: " + paymentRequest);
         Map<String, Object> chargeParams = new HashMap<>();
         chargeParams.put("amount", paymentRequest.getAmount());
         chargeParams.put("currency", paymentRequest.getCurrency());
         chargeParams.put("source", paymentRequest.getToken());
         chargeParams.put("description", paymentRequest.getDescription());
-        return chargeParams;
-    }
 
-    /**
-     * Retrieve all payments for a given userId.
-     *
-     * @param userId The ID of the user to fetch payments for.
-     * @return List of Payment objects.
-     */
-    public List<Payment> getPaymentsByUserId(Long userId) {
-        if (userId != null) {
-            logger.info("Fetching payments for userId: {}", userId);
-            return paymentRepository.findByUserId(userId); // Calls PaymentRepository method
-        } else {
-            logger.info("Fetching all payments (no userId filter applied)");
-            return paymentRepository.findAll(); // Get all payments if no userId is provided
-        }
+        // Execute the charge using Stripe API
+        Charge charge = Charge.create(chargeParams);
+
+        // Log the Stripe charge details
+        System.out.println("Stripe charge created: " + charge);
+
+        // Map the Stripe Charge object to a PaymentResponse DTO
+        return new PaymentResponse(
+                charge.getId(),
+                charge.getStatus(),
+                charge.getAmount(),
+                charge.getCurrency()
+        );
     }
 }

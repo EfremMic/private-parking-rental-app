@@ -2,84 +2,83 @@ package com.parking.payment.paymentservice.controller;
 
 import com.parking.payment.paymentservice.dto.PaymentRequest;
 import com.parking.payment.paymentservice.dto.PaymentResponse;
-import com.parking.payment.paymentservice.model.Payment;
 import com.parking.payment.paymentservice.service.PaymentService;
 import com.stripe.exception.StripeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+
+import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-@CrossOrigin(origins = "http://localhost:3000")
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping("/api/payments")
 public class PaymentController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
-
-    @Value("${stripe.publishable.key}")
-    private String stripePublishableKey;
-
-    private final PaymentService paymentService;
-
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("Service is healthy");
     }
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
+
+    @Autowired
+    private PaymentService paymentService;
 
     /**
-     * Endpoint to fetch Stripe's publishable key for the frontend.
-     */
-    @GetMapping("/stripe-key")
-    public ResponseEntity<String> getStripeKey() {
-        logger.info("Fetching Stripe publishable key");
-        return ResponseEntity.ok(stripePublishableKey);
-    }
-
-    /**
-     * Handles the payment request.
-     * - Charges the user via Stripe.
-     * - Stores the payment details in the database.
+     * Endpoint to charge the user's card.
      *
-     * Request Body Example:
-     * {
-     *   "token": "tok_visa",
-     *   "amount": 1000,
-     *   "currency": "nok",
-     *   "description": "Payment for parking spot",
-     *   "userId": 1,
-     *   "parkingSpotId": 2
-     * }
+     * @param paymentRequest the payment request payload
+     * @return ResponseEntity with payment response
+     * @throws StripeException if payment processing fails
      */
-    @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping
-    public ResponseEntity<PaymentResponse> chargePayment(@RequestBody PaymentRequest paymentRequest) {
-        logger.info("Received payment request for amount: {}", paymentRequest.getAmount());
+    @PostMapping("/charge")
+    public ResponseEntity<PaymentResponse> chargeCard(@Valid @RequestBody PaymentRequest paymentRequest) {
+        log.info("Received charge request for userId: {}, parkingSpotId: {}",
+                paymentRequest.getUserId(), paymentRequest.getParkingSpotId());
         try {
             PaymentResponse paymentResponse = paymentService.charge(paymentRequest);
-            if ("succeeded".equals(paymentResponse.getStatus())) {
-                logger.info("Payment succeeded for amount: {}", paymentRequest.getAmount());
-                return ResponseEntity.ok(paymentResponse);
-            } else {
-                logger.warn("Payment failed with status: {}", paymentResponse.getStatus());
-                return ResponseEntity.status(403).body(paymentResponse);
-            }
-        } catch (StripeException e) {
-            logger.error("StripeException occurred: {}", e.getMessage());
-            return ResponseEntity.status(500).body(new PaymentResponse(null, "failed", paymentRequest.getAmount(), paymentRequest.getCurrency()));
+            log.info("Payment successful for userId: {}", paymentRequest.getUserId());
+            return ResponseEntity.ok(paymentResponse);
+        } catch (StripeException ex) {
+            log.error("Payment failed: {}", ex.getMessage());
+            return ResponseEntity.status(500).body(
+                    new PaymentResponse(
+                            "FAILED",
+                            null,
+                            0,
+                            "Payment failed: " + ex.getMessage()
+                    )
+            );
         }
     }
 
-    /**
-     * Retrieves all payment records.
-     * Optionally, filter by userId.
-     */
-    @GetMapping
-    public ResponseEntity<List<Payment>> getAllPayments(@RequestParam(required = false) Long userId) {
-        logger.info("Fetching payments for user: {}", userId);
-        List<Payment> payments = paymentService.getPaymentsByUserId(userId);
-        return ResponseEntity.ok(payments);
-    }
 
+    /**
+     * Endpoint to create a PaymentIntent for Stripe integration.
+     *
+     * @param paymentRequest the payment request payload
+     * @return ResponseEntity with clientSecret for Stripe
+     */
+    @PostMapping
+    public ResponseEntity<Map<String, String>> createPaymentIntent(@RequestBody PaymentRequest paymentRequest) {
+        log.info("Received PaymentIntent creation request for userId: {}", paymentRequest.getUserId());
+        Map<String, String> response = new HashMap<>();
+        try {
+            // Replace "your-client-secret" with dynamic generation logic
+            String clientSecret = "your-client-secret"; // Simulate Stripe PaymentIntent clientSecret
+            response.put("clientSecret", clientSecret);
+            log.info("PaymentIntent created successfully for userId: {}", paymentRequest.getUserId());
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            log.error("Failed to create PaymentIntent: {}", ex.getMessage());
+            response.put("error", "Failed to create PaymentIntent");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }

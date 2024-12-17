@@ -1,87 +1,64 @@
 package com.parking.payment.paymentservice.config;
-
-import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.ExchangeBuilder;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
-import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Configuration
 public class AmqpConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(AmqpConfig.class);
+    public static final String USER_EXCHANGE = "user.exchange";
+    public static final String USER_QUEUE = "user.events";
+    public static final String PAYMENT_EXCHANGE = "payment.exchange";
+    public static final String PAYMENT_REQUEST_QUEUE = "payment-request-queue";
+    public static final String PAYMENT_RESULT_QUEUE = "payment-result-queue";
 
     @Bean
-    public TopicExchange userExchange(@Value("${user.exchange.name}") String exchangeName) {
-        return buildExchange(exchangeName);
+    public TopicExchange userExchange() {
+        return ExchangeBuilder.topicExchange(USER_EXCHANGE).durable(true).build();
     }
 
     @Bean
-    public Queue userCreatedQueue(@Value("${user.queue.name}") String queueName) {
-        return buildQueue(queueName);
+    public Queue userCreatedQueue() {
+        return new Queue(USER_QUEUE, true);
     }
 
     @Bean
-    public Binding userBinding(Queue userCreatedQueue, TopicExchange userExchange, @Value("${user.created.routing.key}") String routingKey) {
-        return buildBinding(userCreatedQueue, userExchange, routingKey);
+    public Binding userBinding() {
+        return BindingBuilder.bind(userCreatedQueue()).to(userExchange()).with("user.created");
     }
 
     @Bean
-    public TopicExchange paymentExchange(@Value("${payment.exchange.name}") String exchangeName) {
-        return buildExchange(exchangeName);
+    public TopicExchange paymentExchange() {
+        return ExchangeBuilder.topicExchange(PAYMENT_EXCHANGE).durable(true).build();
     }
 
     @Bean
-    public Queue paymentRequestQueue(@Value("${payment.request.queue.name}") String queueName) {
-        return buildQueue(queueName);
+    public Queue paymentRequestQueue() {
+        return new Queue(PAYMENT_REQUEST_QUEUE, true);
     }
 
     @Bean
-    public Queue paymentResultQueue(@Value("${payment.result.queue.name}") String queueName) {
-        return buildQueue(queueName);
+    public Queue paymentResultQueue() {
+        return new Queue(PAYMENT_RESULT_QUEUE, true);
     }
 
     @Bean
-    public Binding paymentRequestBinding(Queue paymentRequestQueue, TopicExchange paymentExchange, @Value("${payment.request.routing.key}") String routingKey) {
-        return buildBinding(paymentRequestQueue, paymentExchange, routingKey);
+    public Binding paymentRequestBinding() {
+        return BindingBuilder.bind(paymentRequestQueue()).to(paymentExchange()).with("payment.request");
     }
 
     @Bean
-    public Binding paymentResultBinding(Queue paymentResultQueue, TopicExchange paymentExchange, @Value("${payment.result.routing.key}") String routingKey) {
-        return buildBinding(paymentResultQueue, paymentExchange, routingKey);
+    public Binding paymentResultBinding() {
+        return BindingBuilder.bind(paymentResultQueue()).to(paymentExchange()).with("payment.result");
     }
 
     @Bean
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
-    }
-
-    @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter converter) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(converter);
-        return rabbitTemplate;
-    }
-
-    @PostConstruct
-    public void logConfiguration() {
-        logger.info("RabbitMQ Configuration Initialized");
-    }
-
-    private TopicExchange buildExchange(String exchangeName) {
-        return ExchangeBuilder.topicExchange(exchangeName).durable(true).build();
-    }
-
-    private Queue buildQueue(String queueName) {
-        return new Queue(queueName, true);
-    }
-
-    private Binding buildBinding(Queue queue, TopicExchange exchange, String routingKey) {
-        return BindingBuilder.bind(queue).to(exchange).with(routingKey);
     }
 }

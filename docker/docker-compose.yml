@@ -12,6 +12,7 @@ services:
 
   rabbitmq:
       image: rabbitmq:3-management
+      container_name: rabbitmq
       ports:
         - "5672:5672"
         - "15672:15672"
@@ -93,6 +94,7 @@ services:
   payment-service:
       build:
         context: ../payment-service  # Path to payment-service Dockerfile
+      container_name: payment-service
       ports:
         - "8084:8080"  # Mapping internal app port 8080 to external 8084
       networks:
@@ -107,7 +109,7 @@ services:
         rabbitmq:
           condition: service_healthy  # Wait until the RabbitMQ service is healthy
       healthcheck:
-        test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+        test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
         interval: 30s
         timeout: 10s
         retries: 3

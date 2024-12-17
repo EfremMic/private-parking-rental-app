@@ -33,29 +33,31 @@ public class PaymentControllerTest {
 
     @Test
     public void testChargeCard() throws Exception {
-        // Arrange
+        // Arrange: Set up request and mocked response
         PaymentRequest request = new PaymentRequest(
-                "tok_visa",       // Token
-                1000L,            // Amount as Long
+                "tok_visa12345",  // Updated token to meet @Size constraint (min 10 characters)
+                1000L,            // Amount in cents
                 "usd",            // Currency
                 "Test payment",   // Description
-                1L,               // userId as Long
-                1L                // parkingSpotId as Long
+                1L,               // User ID
+                1L                // Parking Spot ID
         );
 
-        PaymentResponse mockResponse = new PaymentResponse("ch_1ABC", "succeeded", 1000L, "usd");
+        PaymentResponse mockResponse = new PaymentResponse(
+                "ch_1ABC", "succeeded", 1000L, "usd"
+        );
 
         // Mock the behavior of the PaymentService
         when(paymentService.charge(any(PaymentRequest.class))).thenReturn(mockResponse);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/payment/charge")
+        // Act & Assert: Perform the POST request and validate response
+        mockMvc.perform(post("/api/payments/charge") // Corrected endpoint path
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionId").value("ch_1ABC"))
-                .andExpect(jsonPath("$.status").value("succeeded"))
-                .andExpect(jsonPath("$.amount").value(1000L))
-                .andExpect(jsonPath("$.currency").value("usd"));
+                        .content(objectMapper.writeValueAsString(request))) // Serialize request to JSON
+                .andExpect(status().isOk()) // Expect HTTP 200 OK
+                .andExpect(jsonPath("$.chargeId").value("ch_1ABC")) // Match chargeId field
+                .andExpect(jsonPath("$.status").value("succeeded")) // Match status
+                .andExpect(jsonPath("$.amount").value(1000L)) // Match amount
+                .andExpect(jsonPath("$.currency").value("usd")); // Match currency
     }
 }

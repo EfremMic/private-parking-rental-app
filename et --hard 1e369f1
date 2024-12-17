@@ -1,0 +1,17 @@
+[33m31ec1e8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mpaymentService[m[33m, [m[1;31morigin/paymentService[m[33m)[m Updated to fectch user name from Google - fixed DB!
+[33m7227962[m  Added parking H2 DB Works
+[33m1e369f1[m updated
+[33mbbf7130[m Payment not working
+[33m1503009[m[33m ([m[1;31morigin/Efrem-1[m[33m, [m[1;32mEfrem-1[m[33m)[m Updated a payment checkout
+[33m3481a6a[m Fixed login/Redirect/path to payment
+[33m697c349[m Fixed all front end - including CSS
+[33m9c02a9d[m Fixed minner bug
+[33m62e867e[m Fixed bug in displaying list/add parking as well us search- ALl works
+[33m4b55914[m  alle service registered into Consul, loging with oauth works, welcome-email to new user works, adding parking and listing works
+[33m7f561d2[m  Added a public list for listing parking from all user to all users
+[33m2829761[m Added frontend to user login and parking listing
+[33mf6f8d3a[m Added e-mail notification to user loggin-As welcome
+[33m6ee9ff7[m Updated rabbitMq listner in Notification
+[33m102b73b[m Updated user-service!
+[33m842cbd3[m Added functionality to user-service & parking -service, including functionality of health in Consul
+[33mf1e70ff[m[33m ([m[1;31morigin/saro[m[33m, [m[1;31morigin/main[m[33m)[m Updated payment service with test
