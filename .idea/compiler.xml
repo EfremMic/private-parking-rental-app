@@ -12,11 +12,11 @@
         <module name="user-service" />
         <module name="notification-service" />
         <module name="parking-service" />
-        <module name="central-db-config" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="api-gateway" target="17" />
+      <module name="central-db-config" target="17" />
       <module name="gateway" target="17" />
     </bytecodeTargetLevel>
   </component>
