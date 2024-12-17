@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/docker/docker.iml" filepath="$PROJECT_DIR$/docker/docker.iml" />
       <module fileurl="file://$PROJECT_DIR$/parking-application/parking-application.iml" filepath="$PROJECT_DIR$/parking-application/parking-application.iml" />
-      <module fileurl="file://$PROJECT_DIR$/parking-service/parking-service.iml" filepath="$PROJECT_DIR$/parking-service/parking-service.iml" />
     </modules>
   </component>
 </project>

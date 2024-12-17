@@ -24,12 +24,12 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="apigateway" options="-parameters" />
-      <module name="central-db-config" options="-parameters" />
+      <module name="central-db-config" options="" />
       <module name="gateway" options="-parameters" />
-      <module name="notification-service" options="-parameters" />
+      <module name="notification-service" options="" />
       <module name="parking-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
-      <module name="user-service" options="-parameters" />
+      <module name="user-service" options="" />
     </option>
   </component>
 </project>
