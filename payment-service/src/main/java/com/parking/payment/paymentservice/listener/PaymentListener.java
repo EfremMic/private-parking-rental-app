@@ -19,11 +19,6 @@ public class PaymentListener {
         this.paymentService = paymentService;
     }
 
-    /**
-     * Listens to payment request messages from RabbitMQ and processes them.
-     *
-     * @param paymentRequest PaymentRequest DTO containing the payment details.
-     */
     @RabbitListener(queues = "${payment.request.queue.name}")
     public void processPayment(PaymentRequest paymentRequest) {
         System.out.println("Received payment request: " + paymentRequest);

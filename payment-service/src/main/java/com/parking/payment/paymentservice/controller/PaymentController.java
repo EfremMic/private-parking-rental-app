@@ -30,13 +30,6 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    /**
-     * Endpoint to charge the user's card.
-     *
-     * @param paymentRequest the payment request payload
-     * @return ResponseEntity with payment response
-     * @throws StripeException if payment processing fails
-     */
     @PostMapping("/charge")
     public ResponseEntity<PaymentResponse> chargeCard(@Valid @RequestBody PaymentRequest paymentRequest) {
         log.info("Received charge request for userId: {}, parkingSpotId: {}",
@@ -59,12 +52,6 @@ public class PaymentController {
     }
 
 
-    /**
-     * Endpoint to create a PaymentIntent for Stripe integration.
-     *
-     * @param paymentRequest the payment request payload
-     * @return ResponseEntity with clientSecret for Stripe
-     */
     @PostMapping
     public ResponseEntity<Map<String, String>> createPaymentIntent(@RequestBody PaymentRequest paymentRequest) {
         log.info("Received PaymentIntent creation request for userId: {}", paymentRequest.getUserId());

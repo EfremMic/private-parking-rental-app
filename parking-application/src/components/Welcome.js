@@ -101,14 +101,16 @@ const Welcome = ({ user, onLogout }) => {
                             <div key={spot.id} className="spot-card">
                                 <h3>{spot.name}</h3>
                                 <p>{spot.location?.addressName}, {spot.location?.city}</p>
+                                <p>Available: {spot.availableStartDate} - {spot.availableEndDate}</p>
+                                <p>Description: {spot.description || 'No description provided.'}</p>
                                 <p>Price: {spot.price} NOK</p>
                                     <button
                                         className="rent-button"
                                     onClick={() => handleAction(spot.id)}
                                     disabled={user && user.id === spot.userId} // Disable if the user owns this spot
-                                    title={user && user.id === spot.userId ? "You cannot rent your own parking spot" : "Rent or contact the owner"}
+                                    title={user && user.id === spot.userId ? "You cannot rent your own parking spot" : "Rent "}
                                 >
-                                    {user && user.id === spot.userId ? "Your Spot" : "Rent/Contact Owner"}
+                                    {user && user.id === spot.userId ? "Your Spot" : "Rent"}
                                 </button>
 
                             </div>

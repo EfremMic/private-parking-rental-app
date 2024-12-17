@@ -85,10 +85,7 @@ public class PaymentService {
         }
     }
 
-    /**
-     * Handles incoming payment requests from RabbitMQ.
-     * @param paymentRequest PaymentRequest DTO containing payment details.
-     */
+
     @RabbitListener(queues = "${payment.request.queue.name}")
     public void handlePaymentRequest(PaymentRequest paymentRequest) {
         System.out.println("Received payment request: " + paymentRequest);
@@ -120,12 +117,7 @@ public class PaymentService {
         }
     }
 
-    /**
-     * Charges a payment using the Stripe API.
-     * @param paymentRequest PaymentRequest DTO containing the payment details.
-     * @return PaymentResponse DTO with details of the Stripe charge.
-     * @throws StripeException if the payment fails.
-     */
+
     public PaymentResponse charge(PaymentRequest paymentRequest) throws StripeException {
         System.out.println("Initiating payment for: " + paymentRequest);
         Map<String, Object> chargeParams = new HashMap<>();

@@ -20,4 +20,6 @@ public class UserAuthEvent {
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
     }
+
 }
+

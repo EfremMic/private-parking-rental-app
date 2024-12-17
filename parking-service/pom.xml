@@ -34,7 +34,6 @@
 		</dependency>
 
 
-
 		<!-- Spring Boot Starter for JPA (Database) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

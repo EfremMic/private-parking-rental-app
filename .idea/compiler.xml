@@ -11,8 +11,8 @@
         <module name="payment-service" />
         <module name="user-service" />
         <module name="notification-service" />
-        <module name="central-db-config" />
         <module name="parking-service" />
+        <module name="central-db-config" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
